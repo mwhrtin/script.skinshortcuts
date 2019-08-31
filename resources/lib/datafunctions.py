@@ -1,6 +1,6 @@
 # coding=utf-8
 import os, sys, datetime, unicodedata, re, types
-import xbmc, xbmcaddon, xbmcgui, xbmcvfs, urllib
+import xbmc, xbmcaddon, xbmcgui, xbmcvfs
 import xml.etree.ElementTree as xmltree
 import hashlib, hashlist
 import ast
@@ -10,8 +10,10 @@ from unidecode import unidecode
 from unicodeutils import try_decode
 
 if sys.version_info.major == 3:
+    import urllib.request, urllib.parse, urllib.error
     from html.entities import name2codepoint
 else:
+    import urllib
     from htmlentitydefs import name2codepoint
 
 import nodefunctions
@@ -51,7 +53,7 @@ def log(txt):
         try:
             if isinstance (txt,str):
                 txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
+            message = '%s: %s' % (ADDONID, txt)
             xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
         except:
             pass
@@ -713,7 +715,7 @@ class DataFunctions():
                 if propertyName not in fallbackProperties:
                     # Save the property name in the order in which we processed it
                     fallbackProperties.append( propertyName )
-                if propertyName not in fallbacks.keys():
+                if propertyName not in list(fallbacks.keys()):
                     # Create an empty list to hold fallbacks for this property
                     fallbacks[ propertyName ] = []
                 # Check whether any attribute/value pair has to match for this fallback
@@ -1255,8 +1257,8 @@ class DataFunctions():
         if sys.version_info.major == 3:
             text = text
         else:
-            if type(text) != types.UnicodeType:
-                text = unicode(text, 'utf-8', 'ignore')
+            if type(text) != str:
+                text = str(text, 'utf-8', 'ignore')
 
         # decode unicode ( ??? = Ying Shi Ma)
         text = unidecode(text)
@@ -1265,24 +1267,24 @@ class DataFunctions():
         if sys.version_info.major == 3:
             text = text
         else:
-            if type(text) != types.UnicodeType:
-                text = unicode(text, 'utf-8', 'ignore')
+            if type(text) != str:
+                text = str(text, 'utf-8', 'ignore')
 
         # character entity reference
         if entities:
-            text = CHAR_ENTITY_REXP.sub(lambda m: unichr(name2codepoint[m.group(1)]), text)
+            text = CHAR_ENTITY_REXP.sub(lambda m: chr(name2codepoint[m.group(1)]), text)
 
         # decimal character reference
         if decimal:
             try:
-                text = DECIMAL_REXP.sub(lambda m: unichr(int(m.group(1))), text)
+                text = DECIMAL_REXP.sub(lambda m: chr(int(m.group(1))), text)
             except:
                 pass
 
         # hexadecimal character reference
         if hexadecimal:
             try:
-                text = HEX_REXP.sub(lambda m: unichr(int(m.group(1), 16)), text)
+                text = HEX_REXP.sub(lambda m: chr(int(m.group(1), 16)), text)
             except:
                 pass
 

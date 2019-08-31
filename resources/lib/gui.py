@@ -1,6 +1,6 @@
 # coding=utf-8
 import os, sys, datetime, unicodedata
-import xbmc, xbmcgui, xbmcvfs, urllib
+import xbmc, xbmcgui, xbmcvfs
 import xml.etree.ElementTree as xmltree
 from xml.dom.minidom import parse
 from xml.sax.saxutils import escape as escapeXML
@@ -13,7 +13,9 @@ import json as simplejson
 
 if sys.version_info.major == 3:
     import _thread
+    import urllib.request, urllib.parse, urllib.error
 else:
+    import urllib
     import thread
 
 import datafunctions
@@ -52,13 +54,13 @@ def log(txt):
         try:
             if isinstance (txt,str):
                 txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
+            message = '%s: %s' % (ADDONID, txt)
             xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
         except:
             pass
 
 def is_hebrew(text):
-    if type(text) != unicode:
+    if type(text) != str:
         text = text.decode('utf-8')
     for chr in text:
         if ord(chr) >= 1488 and ord(chr) <= 1514:
@@ -456,14 +458,14 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Add fallback properties
         for key in fallbackProperties:
-            if key not in allProps.keys():
+            if key not in list(allProps.keys()):
                 # Check whether we have a fallback for the value
                 for propertyMatch in fallbacks[ key ]:
                     matches = False
                     if propertyMatch[ 1 ] is None:
                         # This has no conditions, so it matched
                         matches = True
-                    elif propertyMatch[ 1 ] in allProps.keys() and allProps[ propertyMatch[ 1 ] ] == propertyMatch[ 2 ]:
+                    elif propertyMatch[ 1 ] in list(allProps.keys()) and allProps[ propertyMatch[ 1 ] ] == propertyMatch[ 2 ]:
                         matches = True
 
                     if matches:
@@ -475,10 +477,10 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Remove any properties whose requirements haven't been met
         for key in otherProperties:
-            if key in allProps.keys() and key in requires.keys() and requires[ key ] not in allProps.keys():
+            if key in list(allProps.keys()) and key in list(requires.keys()) and requires[ key ] not in list(allProps.keys()):
                 # This properties requirements aren't met
                 allProps.pop( key )
-                if "%s-NUM" %( key ) in allProps.keys():
+                if "%s-NUM" %( key ) in list(allProps.keys()):
                     allProps.pop( "%s-NUM" %( key ) )
 
         # Save the new properties to the listitem
@@ -487,7 +489,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
         for key in added:
             listitem.setProperty( key, allProps[ key ] )
         for key in removed:
-            if key not in allProps.keys(): continue
+            if key not in list(allProps.keys()): continue
             listitem.setProperty( key, None )
         for key in changed:
             listitem.setProperty( key, allProps[ key ] )
@@ -618,7 +620,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         enabledSystemDebug = False
         enabledScriptDebug = False
-        if json_response.has_key('result') and json_response['result'].has_key('settings') and json_response['result']['settings'] is not None:
+        if json_response in ['result'] and json_response['settings'] in ['result'] and json_response['result']['settings'] is not None:
             for item in json_response['result']['settings']:
                 if item["id"] == "debug.showloginfo":
                     if item["value"] == False:
@@ -831,7 +833,11 @@ class GUI( xbmcgui.WindowXMLDialog ):
         currentProperties = []
 
         # Get previously loaded properties
-        path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
+        if sys.version_info.major == 3:
+            path = os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties")
+        else:
+            path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
+
         if xbmcvfs.exists( path ):
             # The properties file exists, load from it
             listProperties = eval( xbmcvfs.File( path ).read() )
@@ -848,12 +854,12 @@ class GUI( xbmcgui.WindowXMLDialog ):
         for property in currentProperties:
             #[ groupname, itemLabelID, property, value ]
             if not property[0] == self.group:
-                if property[0] in labelIDChanges.keys():
+                if property[0] in list(labelIDChanges.keys()):
                     property[0] = labelIDChanges[property[0]]
                 elif "." in property[0] and property[ 0 ].rsplit( ".", 1 )[ 1 ].isdigit():
                     # Additional menu
                     groupName, groupValue = property[ 0 ].rsplit( ".", 1 )
-                    if groupName in labelIDChanges.keys() and int( groupValue ) in range( 1, 6 ):
+                    if groupName in list(labelIDChanges.keys()) and int( groupValue ) in range( 1, 6 ):
                         property[0] = "%s.%s" %( labelIDChanges[ groupName ], groupValue )
                 saveData.append( property )
 
@@ -875,7 +881,11 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Try to save the file
         try:
-            f = xbmcvfs.File( os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" ), 'w' )
+            if sys.version_info.major == 3:
+                f = xbmcvfs.File(os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties"), 'w')
+            else:
+                f = xbmcvfs.File( os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" ), 'w' )
+
             f.write( repr( saveData ).replace( "],", "],\n" ) )
             f.close()
         except:
@@ -905,7 +915,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
         if sys.version_info.major == 3:
             _thread.start_new_thread( self._load_backgrounds_thumbnails, () )
         else:
-            thread.start_new_thread( self._load_backgrounds_thumbnails, () )
+            _thread.start_new_thread( self._load_backgrounds_thumbnails, () )
 
         # Should we allow the user to browse for background images...
         elem = tree.find('backgroundBrowse')
