@@ -19,7 +19,7 @@ By default, Skin Shortcuts provides a large array of available widgets which can
 | `[target]` | Yes | The string that will be assigned to `<property name="widgetTarget">` |
 | `[widgetID]` |  | The unique string you use to identify this widget |
 
-If you are customising the [`<widget-groupings />` groupings](./Custom%20groupings.md), these will be displayed in `<content>widgets</content>`.
+If you are customising the [`<widget-groupings />`](./Custom%20groupings.md#widget-groupings), these will be displayed in `<content>widgets</content>`.
 
 ## Defining widget defaults
 
