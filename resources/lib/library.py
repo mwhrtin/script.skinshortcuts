@@ -1666,10 +1666,7 @@ class LibraryFunctions():
         return False
 
     def _install_widget_provider( self, provider ):
-        if int( KODIVERSION ) >= 17:
-            executeAndObserve = ("InstallAddon(%s)", "DialogConfirm.xml", "DialogConfirm.xml" )
-        else:
-            executeAndObserve = ("RunPlugin(plugin://%s)", "DialogYesNo.xml", "DialogProgress.xml" )
+        executeAndObserve = ("InstallAddon(%s)", "DialogConfirm.xml", "DialogConfirm.xml" )
 
         xbmc.executebuiltin( executeAndObserve[ 0 ] %( provider ) )
 
