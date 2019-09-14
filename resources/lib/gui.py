@@ -25,7 +25,6 @@ DATAPATH     = os.path.join( xbmc.translatePath( "special://profile/addon_data/"
 SKINPATH     = xbmc.translatePath( "special://skin/shortcuts/" ).decode('utf-8')
 DEFAULTPATH  = xbmc.translatePath( os.path.join( CWD, 'resources', 'shortcuts').encode("utf-8") ).decode("utf-8")
 LANGUAGE     = ADDON.getLocalizedString
-KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
 
 ACTION_CANCEL_DIALOG = ( 9, 10, 92, 216, 247, 257, 275, 61467, 61448, )
 ACTION_CONTEXT_MENU = ( 117, )
@@ -923,10 +922,6 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
     def _load_overrides_context( self ):
         # Load context menu settings from overrides
-
-        # Check we're running Krypton or later - we don't support the context menu on earlier versions
-        if int( KODIVERSION ) <= 16:
-            return
 
         for overrideType in [ "skin", "script" ]:
             # Load overrides
