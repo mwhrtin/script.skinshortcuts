@@ -1,24 +1,19 @@
-# Skin Shortcuts - 1.0.13
+# Skin Shortcuts - 1.0.20
 
 script.skinshortcuts was written with the intention of making user customizable shortcuts on the home page easier for skinners.
 
 
 ## What's New for Skinners
 
-#### Version 1.0.16 - git version
+#### Version 1.0.20 - git version
 
-- Basic Kodi v18 compatibility
-- Ability to specify action any control in management dialog from overrides - [Read More](./resources/docs/started/Management%20Dialog.md#custom-action-on-control)
-- Some improvements to the interactions with Skin Helper Service, including support for resource addons (see SH wiki)
+- Basic Kodi v19 compatibility
 
-#### Version 1.0.13 - repo version
+#### Version 1.0.17 - repo version
 
-- Skinners can now set that their skin should not use the users shared additional submenus - [Read More](./resources/docs/started/Getting%20Started.md#shared-additioanl-submenu)
-- Submenu template improvements - [Read More](./resources/docs/advanced/Templates.md#sub-menu-template)
-- Please be aware that:-
-  - Warnings on deleting a shortcut are now shown when disabling a shortcut
-  - The processing of overrides has been adjusted so that visibilityoverrides will themselves be overriden by any additional overrides which match
-
+- Some minor changes for Jarvis+
+- Basic support for Kodi Leia
+ 
 ## With Thanks - Because their names don't deserve to be at the bottom :)
 
 - Huge thanks to Ronie, whose code for listing plugins is used in this script
