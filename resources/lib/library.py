@@ -2152,11 +2152,7 @@ class ShowDialog( xbmcgui.WindowXMLDialog ):
         self.getControl(1).setLabel(self.windowtitle)
 
         # Set Cancel label (Kodi 17+)
-        if int( KODIVERSION ) >= 17:
-            try:
-                self.getControl(7).setLabel(xbmc.getLocalizedString(222))
-            except:
-                log( "Unable to set label for control 7" )
+        self.getControl(7).setLabel(xbmc.getLocalizedString(222))
 
         for item in self.listing :
             listitem = xbmcgui.ListItem(label=item.getLabel(), label2=item.getLabel2())
