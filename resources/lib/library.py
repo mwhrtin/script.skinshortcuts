@@ -790,9 +790,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(FileManager)", "7", "32034", {"icon": "DefaultFolder.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(Profiles)", "13200", "32034", {"icon": "UnknownUser.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(SystemInfo)", "10007", "32034", {"icon": "SystemInfo.png"} ]) )
-
-        if int( KODIVERSION ) >= 16:
-            listitems.append( self._create(["ActivateWindow(EventLog,events://,return)", "14111", "32034", {"icon": "Events.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(EventLog,events://,return)", "14111", "32034", {"icon": "Events.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(Favourites)", "1036", "32034", {"icon": "Favourites.png"} ]) )
 
