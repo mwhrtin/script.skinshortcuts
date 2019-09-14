@@ -766,21 +766,16 @@ class LibraryFunctions():
         # Videos, Movies, TV Shows, Live TV, Music, Music Videos, Pictures, Weather, Programs,
         # Play dvd, eject tray
         # Settings, File Manager, Profiles, System Info
-        if int( KODIVERSION ) >= 18:
-            listitems.append( self._create(["ActivateWindow(Videos)", "3", "32034", {"icon": "DefaultVideo.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(Videos)", "10006", "32034", {"icon": "DefaultVideo.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(Videos)", "3", "32034", {"icon": "DefaultVideo.png"} ]) )
         listitems.append( self._create(["ActivateWindow(Videos,videodb://movies/titles/,return)", "342", "32034", {"icon": "DefaultMovies.png"} ]) )
         listitems.append( self._create(["ActivateWindow(Videos,videodb://tvshows/titles/,return)", "20343", "32034", {"icon": "DefaultTVShows.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(TVGuide)", "32022", "32034", {"icon": "DefaultTVShows.png"} ]) )
         listitems.append( self._create(["ActivateWindow(RadioGuide)", "32087", "32034", {"icon": "DefaultTVShows.png"} ]) )
 
-        if int( KODIVERSION ) >= 18:
-            listitems.append( self._create(["ActivateWindow(Music)", "2", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(Music)", "10005", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(Music)", "2", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
         listitems.append( self._create(["PlayerControl(PartyMode)", "589", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
+
         listitems.append( self._create(["PlayerControl(PartyMode(Video))", "32108", "32034", {"icon": "DefaultMusicVideos.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(Videos,videodb://musicvideos/titles/,return)", "20389", "32034", {"icon": "DefaultMusicVideos.png"} ] ) )
