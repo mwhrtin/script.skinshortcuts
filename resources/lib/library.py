@@ -1,47 +1,39 @@
 # coding=utf-8
 import os, sys, datetime, unicodedata
-import xbmc, xbmcgui, xbmcvfs, urllib
+import xbmc, xbmcgui, xbmcvfs
 import xml.etree.ElementTree as xmltree
-import thread
 from xml.dom.minidom import parse
 from xml.sax.saxutils import escape as escapeXML
 from traceback import print_exc
 from unidecode import unidecode
 from unicodeutils import try_decode
 import datafunctions, nodefunctions
+import json as simplejson
+import urllib.request, urllib.parse, urllib.error
+
 DATA = datafunctions.DataFunctions()
 NODE = nodefunctions.NodeFunctions()
-
-if sys.version_info < (2, 7):
-    import simplejson
-else:
-    import json as simplejson
-
 ADDON        = sys.modules[ "__main__" ].ADDON
 ADDONID      = sys.modules[ "__main__" ].ADDONID
 CWD          = sys.modules[ "__main__" ].CWD
-DATAPATH     = os.path.join( xbmc.translatePath( "special://profile/addon_data/" ).decode('utf-8'), ADDONID )
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
 LANGUAGE     = sys.modules[ "__main__" ].LANGUAGE
 KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
-        try:
-            if isinstance (txt,str):
-                txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
-        except:
-            pass
+        if not isinstance (txt,str):
+            txt = txt.decode('utf-8')
+        message = u'%s: %s' % (ADDONID, txt)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 def kodiwalk(path, stringForce = False):
     json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"%s","media":"files"},"id":1}' % str(path))
-    json_query = unicode(json_query, 'utf-8', errors='ignore')
     json_response = simplejson.loads(json_query)
     files = []
-    if json_response.has_key('result') and json_response['result'].has_key('files') and json_response['result']['files'] is not None:
+    if 'result' in json_response and 'files' in json_response['result'] and json_response['result']['files'] is not None:
         for item in json_response['result']['files']:
-            if item.has_key('file') and item.has_key('filetype') and item.has_key('label'):
+            if 'file' in item and 'filetype' in item and 'label' in item:
                 if item['filetype'] == 'directory' and not item['file'].endswith(('.xsp', '.m3u', '.xml/', '.xml' )):
                     if stringForce and item['file'].startswith(stringForce):
                         files = files + kodiwalk( xbmc.translatePath( item['file'] ), stringForce )
@@ -577,7 +569,7 @@ class LibraryFunctions():
         # Retrieve icon and thumbnail
         if item[3]:
             if "icon" in item[3].keys() and item[ 3 ][ "icon" ] is not None:
-                icon = item[3]["icon"]
+                icon = try_decode(item[3]["icon"])
             else:
                 icon = "DefaultShortcut.png"
             if "thumb" in item[3].keys():
@@ -603,7 +595,7 @@ class LibraryFunctions():
 
         usedDefaultThumbAsIcon = False
         if self.useDefaultThumbAsIcon == True and thumbnail is not None:
-            icon = thumbnail
+            icon = try_decode(thumbnail)
             thumbnail = None
             usedDefaultThumbAsIcon = True
 
@@ -717,12 +709,12 @@ class LibraryFunctions():
             prefix = "library://music"
             action = "||AUDIO||"
 
-        rootdir = os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", library )
+        rootdir = os.path.join(xbmc.translatePath("special://profile"), "library", library)
         if type == "custom":
             log( "Listing custom %s nodes..." %( library ) )
         else:
-            rootdir = os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", library )
-            log( "Listing default %s nodes..." %( library ) )
+            rootdir = os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", library)
+            log("Listing default %s nodes..." %(library))
 
         nodes = NODE.get_nodes( rootdir, prefix )
         if nodes == False or len( nodes ) == 0:
@@ -738,7 +730,7 @@ class LibraryFunctions():
             # 4 = Order
             # 5 = Media type (not folders...?)
 
-            #make sure the path ends with a trailing slash te prevent weird kodi behaviour
+            #make sure the path ends with a trailing slash to prevent weird kodi behaviour
             if "/" in nodes[key][2] and not nodes[key][2].endswith("/"):
                 nodes[key][2] += "/"
 
@@ -860,11 +852,10 @@ class LibraryFunctions():
         # Add tv channels
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "PVR.GetChannels", "params": { "channelgroupid": "alltv", "properties": ["thumbnail", "channeltype", "hidden", "locked", "channel", "lastplayed"] } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
-        if json_response.has_key('result') and json_response['result'].has_key('channels') and json_response['result']['channels'] is not None:
+        if 'result' in json_response and 'channels' in json_response['result'] and json_response['result']['channels'] is not None:
             for item in json_response['result']['channels']:
                 listitems.append( self._create(["pvr-channel://" + str( item['channelid'] ), item['label'], "::SCRIPT::32076", {"icon": "DefaultTVShows.png", "thumb": item[ "thumbnail"]}]) )
 
@@ -873,11 +864,10 @@ class LibraryFunctions():
         # Add radio channels
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "PVR.GetChannels", "params": { "channelgroupid": "allradio", "properties": ["thumbnail", "channeltype", "hidden", "locked", "channel", "lastplayed"] } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
-        if json_response.has_key('result') and json_response['result'].has_key('channels') and json_response['result']['channels'] is not None:
+        if 'result' in json_response and 'channels' in json_response['result'] and json_response['result']['channels'] is not None:
             for item in json_response['result']['channels']:
                 listitems.append( self._create(["pvr-channel://" + str( item['channelid'] ), item['label'], "::SCRIPT::32077", {"icon": "DefaultTVShows.png", "thumb": item[ "thumbnail"]}]) )
 
@@ -927,11 +917,10 @@ class LibraryFunctions():
         # Add video sources
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetSources", "params": { "media": "video" } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
-        if json_response.has_key('result') and json_response['result'].has_key('sources') and json_response['result']['sources'] is not None:
+        if 'result' in json_response and 'sources' in json_response['result'] and json_response['result']['sources'] is not None:
             for item in json_response['result']['sources']:
                 listitems.append( self._create(["||SOURCE||" + item['file'], item['label'], "32069", {"icon": "DefaultFolder.png"} ]) )
         self.addToDictionary( "videosources", listitems )
@@ -941,11 +930,10 @@ class LibraryFunctions():
         # Add audio sources
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetSources", "params": { "media": "music" } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
-        if json_response.has_key('result') and json_response['result'].has_key('sources') and json_response['result']['sources'] is not None:
+        if 'result' in json_response and 'sources' in json_response['result'] and json_response['result']['sources'] is not None:
             for item in json_response['result']['sources']:
                 listitems.append( self._create(["||SOURCE||" + item['file'], item['label'], "32073", {"icon": "DefaultFolder.png"} ]) )
         self.addToDictionary( "musicsources", listitems )
@@ -955,11 +943,10 @@ class LibraryFunctions():
         # Add picture sources
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetSources", "params": { "media": "pictures" } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
-        if json_response.has_key('result') and json_response['result'].has_key('sources') and json_response['result']['sources'] is not None:
+        if 'result' in json_response and 'sources' in json_response['result'] and json_response['result']['sources'] is not None:
             for item in json_response['result']['sources']:
                 listitems.append( self._create(["||SOURCE||" + item['file'], item['label'], "32089", {"icon": "DefaultFolder.png"} ]) )
         self.addToDictionary( "picturesources", listitems )
@@ -977,13 +964,13 @@ class LibraryFunctions():
                 try:
                     playlist = file['path']
                     label = file['label']
-                    playlistfile = xbmc.translatePath( playlist ).decode('utf-8')
+                    playlistfile = xbmc.translatePath(playlist)
                     mediaLibrary = path[2]
 
                     if playlist.endswith( '.xsp' ):
                         contents = xbmcvfs.File(playlistfile, 'r')
-                        contents_data = contents.read().decode('utf-8')
-                        xmldata = xmltree.fromstring(contents_data.encode('utf-8'))
+                        contents_data = contents.read()
+                        xmldata = xmltree.fromstring(contents_data)
                         mediaType = "unknown"
                         for line in xmldata.getiterator():
                             if line.tag == "smartplaylist":
@@ -1002,7 +989,7 @@ class LibraryFunctions():
                                 # Create a list item
                                 listitem = self._create(["::PLAYLIST>%s::" %( mediaLibrary ), name, path[1], {"icon": "DefaultPlaylist.png"} ])
                                 listitem.setProperty( "action-play", "PlayMedia(" + playlist + ")" )
-                                listitem.setProperty( "action-show", "ActivateWindow(" + mediaLibrary + "," + playlist + ",return)".encode( 'utf-8' ) )
+                                listitem.setProperty("action-show", "ActivateWindow(" + mediaLibrary + "," + playlist + ",return)")
                                 listitem.setProperty( "action-party", "PlayerControl(PartyMode(%s))" %( playlist ) )
 
                                 # Add widget information
@@ -1063,7 +1050,7 @@ class LibraryFunctions():
             for file in kodiwalk( path ):
                 playlist = file['path']
                 label = file['label']
-                playlistfile = xbmc.translatePath( playlist ).decode('utf-8')
+                playlistfile = xbmc.translatePath(playlist)
 
                 if playlist.endswith( '-randomversion.xsp' ):
                     contents = xbmcvfs.File(playlistfile, 'r')
@@ -1091,7 +1078,7 @@ class LibraryFunctions():
         listitems = []
         listing = None
 
-        fav_file = xbmc.translatePath( 'special://profile/favourites.xml' ).decode("utf-8")
+        fav_file = xbmc.translatePath('special://profile/favourites.xml')
         if xbmcvfs.exists( fav_file ):
             doc = parse( fav_file )
             listing = doc.documentElement.getElementsByTagName( 'favourite' )
@@ -1144,13 +1131,12 @@ class LibraryFunctions():
                 shortcutType = "::SCRIPT::32012"
 
             json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Addons.Getaddons", "params": { "content": "%s", "properties": ["name", "path", "thumbnail", "enabled"] } }' % contenttype)
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
             json_response = simplejson.loads(json_query)
 
-            if json_response.has_key('result') and json_response['result'].has_key('addons') and json_response['result']['addons'] is not None:
+            if 'result' in json_response and 'addons' in json_response['result'] and json_response['result']['addons'] is not None:
                 for item in json_response['result']['addons']:
                     if item['enabled'] == True:
-                        path = "RunAddOn(" + item['addonid'].encode('utf-8') + ")"
+                        path = "RunAddOn(" + item['addonid'] + ")"
                         action = None
                         thumb = "DefaultAddon.png"
                         if item['thumbnail'] != "":
@@ -1161,8 +1147,8 @@ class LibraryFunctions():
 
                         # If this is a plugin, mark that we can browse it
                         if item[ "type" ] == "xbmc.python.pluginsource":
-                            path = "||BROWSE||" + item['addonid'].encode('utf-8')
-                            action = "RunAddOn(" + item['addonid'].encode('utf-8') + ")"
+                            path = "||BROWSE||" + item['addonid']
+                            action = "RunAddOn(" + item['addonid'] + ")"
 
                             listitem.setProperty( "path", path )
                             listitem.setProperty( "action", action )
@@ -1181,8 +1167,8 @@ class LibraryFunctions():
                                 if content in contentData:
                                     # Add it as a plugin in the relevant category
                                     otherItem = self._create([path, item['name'] + "  >", contentData[ content ][ 0 ], {"icon": "DefaultAddon.png", "thumb": thumb} ])
-                                    otherItem.setProperty( "path", "||BROWSE||" + item['addonid'].encode('utf-8') )
-                                    otherItem.setProperty( "action", "RunAddOn(" + item['addonid'].encode('utf-8') + ")" )
+                                    otherItem.setProperty("path", "||BROWSE||" + item['addonid'])
+                                    otherItem.setProperty("action", "RunAddOn(" + item['addonid'] + ")")
                                     contentData[ content ][ 1 ][ item[ "name" ] ] = otherItem
                                     # If it's executable, add it to our seperate program plugins for widgets
                                     if content == "executable":
@@ -1224,16 +1210,16 @@ class LibraryFunctions():
     def detectPluginContent(self, item):
         #based on the properties in the listitem we try to detect the content
 
-        if not item.has_key("showtitle") and not item.has_key("artist"):
+        if "showtitle" not in item and "artist" not in item:
             #these properties are only returned in the json response if we're looking at actual file content...
             # if it's missing it means this is a main directory listing and no need to scan the underlying listitems.
             return None
 
-        if not item.has_key("showtitle") and not item.has_key("artist"):
+        if "showtitle" not in item and "artist" not in item:
             #these properties are only returned in the json response if we're looking at actual file content...
             # if it's missing it means this is a main directory listing and no need to scan the underlying listitems.
             return "files"
-        if not item.has_key("showtitle") and item.has_key("artist"):
+        if "showtitle" not in item and "artist" in item:
             ##### AUDIO ITEMS ####
             if len( item["artist"] ) != 0:
                 artist = item["artist"][0]
@@ -1358,11 +1344,10 @@ class LibraryFunctions():
 
         #we retrieve a whole bunch of properties, needed to guess the content type properly
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetDirectory", "params": { "properties": ["title", "file", "thumbnail", "episode", "showtitle", "season", "album", "artist", "imdbnumber", "firstaired", "mpaa", "trailer", "studio", "art"], "directory": "' + location + '", "media": "files" } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
-        if json_response.has_key('result') and json_response['result'].has_key('files') and json_response['result']['files']:
+        if 'result' in json_response and 'files' in json_response['result'] and json_response['result']['files']:
             json_result = json_response['result']['files']
 
             for item in json_result:
@@ -1898,24 +1883,23 @@ class LibraryFunctions():
         #this gets images from a vfs path to be used as backgrounds or icons
         images = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetDirectory", "params": { "properties": ["title", "art", "file", "fanart"], "directory": "' + path + '", "media": "files" } }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
-        if json_response.has_key('result') and json_response['result'].has_key('files') and json_response['result']['files']:
+        if 'result' in json_response and 'files' in json_response['result'] and json_response['result']['files']:
             json_result = json_response['result']['files']
             for item in json_result:
                 label = item["label"]
                 image = ""
                 if item.get("art"):
-                    if item["art"].has_key("fanart"):
+                    if "fanart" in item["art"]:
                         image = item["art"]["fanart"]
-                    elif item["art"].has_key("thumb"):
+                    elif "thumb" in item["art"]:
                         image = item["art"]["thumb"]
                 if not image and item.get("thumbnail"):
                     image = item["thumbnail"]
                 if not image and item.get("file",""):
                     image = item["file"]
                 if image:
-                    image = urllib.unquote(image).decode('utf8')
+                    image = urllib.parse.unquote(image).decode('utf8')
                     if "$INFO" in image:
                         image = image.replace("image://","")
                         if image.endswith("/"):

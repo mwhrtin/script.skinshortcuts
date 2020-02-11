@@ -1,26 +1,27 @@
 # coding=utf-8
 import os, sys, datetime, unicodedata, re, types
-import xbmc, xbmcaddon, xbmcgui, xbmcvfs, urllib
+import xbmc, xbmcaddon, xbmcgui, xbmcvfs
 import xml.etree.ElementTree as xmltree
 import hashlib, hashlist
 import ast
 from xml.dom.minidom import parse
 from traceback import print_exc
-from htmlentitydefs import name2codepoint
 from unidecode import unidecode
 from unicodeutils import try_decode
+import urllib.request, urllib.parse, urllib.error
+from html.entities import name2codepoint
 
 import nodefunctions
 NODE = nodefunctions.NodeFunctions()
 
 ADDON        = xbmcaddon.Addon()
-ADDONID      = ADDON.getAddonInfo('id').decode( 'utf-8' )
+ADDONID      = ADDON.getAddonInfo('id')
 KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
 LANGUAGE     = ADDON.getLocalizedString
-CWD          = ADDON.getAddonInfo('path').decode("utf-8")
-DATAPATH     = os.path.join( xbmc.translatePath( "special://profile/addon_data/" ).decode('utf-8'), ADDONID )
-SKINPATH     = xbmc.translatePath( "special://skin/shortcuts/" ).decode('utf-8')
-DEFAULTPATH  = xbmc.translatePath( os.path.join( CWD, 'resources', 'shortcuts').encode("utf-8") ).decode("utf-8")
+CWD          = ADDON.getAddonInfo('path')
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
+SKINPATH     = xbmc.translatePath("special://skin/shortcuts/")
+DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts'))
 
 # character entity reference
 CHAR_ENTITY_REXP = re.compile('&(%s);' % '|'.join(name2codepoint))
@@ -37,13 +38,10 @@ REMOVE_REXP = re.compile('-{2,}')
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
-        try:
-            if isinstance (txt,str):
-                txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
-        except:
-            pass
+        if not isinstance (txt,str):
+            txt = txt.decode('utf-8')
+        message = u'%s: %s' % (ADDONID, txt)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 class DataFunctions():
     def __init__(self):
@@ -132,7 +130,7 @@ class DataFunctions():
         log( "Loading shortcuts for group " + group )
 
         if profileDir is None:
-            profileDir = xbmc.translatePath( "special://profile/" ).decode( "utf-8" )
+            profileDir = xbmc.translatePath("special://profile/")
 
         userShortcuts = os.path.join( profileDir, "addon_data", ADDONID, self.slugify( group, True, isSubLevel = isSubLevel ) + ".DATA.xml" )
         skinShortcuts = os.path.join( SKINPATH , self.slugify( group ) + ".DATA.xml")
@@ -469,7 +467,7 @@ class DataFunctions():
                             oldicon = icon
                             newicon = elem.text
 
-        if not (xbmc.skinHasImage(newicon.encode("utf-8")) or xbmcvfs.exists(newicon.encode("utf-8"))) and setToDefault == True:
+        if not (xbmc.skinHasImage(newicon) or xbmcvfs.exists(newicon)) and setToDefault == True:
             newicon = self._get_icon_overrides( tree, "DefaultShortcut.png", group, labelID, False )
 
         return newicon
@@ -548,7 +546,7 @@ class DataFunctions():
         self.currentProperties = []
         self.defaultProperties = []
 
-        path = os.path.join( profileDir, "addon_data", ADDONID, xbmc.getSkinDir().decode('utf-8') + ".properties" ).encode( "utf-8" )
+        path = os.path.join(profileDir, "addon_data", ADDONID, xbmc.getSkinDir() + ".properties")
         #path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
         if xbmcvfs.exists( path ):
             # The properties file exists, load from it
@@ -1098,10 +1096,10 @@ class DataFunctions():
     def _save_hash( self, filename, file ):
         if file is not None:
             hasher = hashlib.md5()
-            hasher.update( file )
-            hashlist.list.append( [filename, hasher.hexdigest()] )
+            hasher.update(xbmcvfs.File(filename).read().encode("utf-8"))
+            hashlist.list.append([filename, hasher.hexdigest()])
         else:
-            hashlist.list.append( [filename, None] )
+            hashlist.list.append([filename, None])
 
 
     # in-place prettyprint formatter
@@ -1140,6 +1138,8 @@ class DataFunctions():
         lasttranslation = None
 
         # Get just the integer of the string, for the input forms where this is valid
+        data = try_decode(data)
+
         if not data.find( "::SCRIPT::" ) == -1:
             data = data[10:]
         elif not data.find( "::LOCAL::" ) == -1:
@@ -1214,15 +1214,15 @@ class DataFunctions():
             text = "NUM-" + text
 
         # text to unicode
-        if type(text) != types.UnicodeType:
-            text = unicode(text, 'utf-8', 'ignore')
+        if type(text) != str:
+            text = str(text, 'utf-8', 'ignore')
 
         # decode unicode ( ??? = Ying Shi Ma)
         text = unidecode(text)
 
         # text back to unicode
-        if type(text) != types.UnicodeType:
-            text = unicode(text, 'utf-8', 'ignore')
+        if type(text) != str:
+            text = str(text, 'utf-8', 'ignore')
 
         # character entity reference
         if entities:

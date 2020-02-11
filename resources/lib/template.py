@@ -1,5 +1,5 @@
 # coding=utf-8
-import os
+import os, sys
 import xbmc, xbmcaddon, xbmcvfs
 import xml.etree.ElementTree as xmltree
 import hashlib, hashlist
@@ -8,19 +8,16 @@ from traceback import print_exc
 import simpleeval, operator, ast
 from simpleeval import simple_eval
 
-ADDON        = xbmcaddon.Addon()
-ADDONID      = ADDON.getAddonInfo('id').decode( 'utf-8' )
-SKINPATH     = xbmc.translatePath( "special://skin/shortcuts/" ).decode('utf-8')
+ADDON    = xbmcaddon.Addon()
+ADDONID  = ADDON.getAddonInfo('id')
+SKINPATH = xbmc.translatePath("special://skin/shortcuts/")
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
-        try:
-            if isinstance (txt,str):
-                txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
-        except:
-            pass
+        if not isinstance (txt,str):
+            txt = txt.decode('utf-8')
+        message = u'%s: %s' % (ADDONID, txt)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 class Template():
     def __init__( self ):
@@ -902,10 +899,10 @@ class Template():
     def _save_hash( self, filename, file ):
         if file is not None:
             hasher = hashlib.md5()
-            hasher.update( file )
-            hashlist.list.append( [filename, hasher.hexdigest()] )
+            hasher.update(file.encode("utf8"))
+            hashlist.list.append([filename.encode("utf8"), hasher.hexdigest()])
         else:
-            hashlist.list.append( [filename, None] )
+            hashlist.list.append([filename.encode("utf8"), None])
 
     def copy_tree( self, elem ):
         if elem is None: return None

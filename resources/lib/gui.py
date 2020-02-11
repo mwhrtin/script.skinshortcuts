@@ -1,16 +1,17 @@
 # coding=utf-8
 import os, sys, datetime, unicodedata
-import xbmc, xbmcgui, xbmcvfs, urllib
+import xbmc, xbmcgui, xbmcvfs
 import xml.etree.ElementTree as xmltree
 from xml.dom.minidom import parse
 from xml.sax.saxutils import escape as escapeXML
-import thread
 from traceback import print_exc
 from unicodeutils import try_decode
 import calendar
 from time import gmtime, strftime
 import random
 import json as simplejson
+import urllib.request, urllib.parse, urllib.error
+import _thread as thread
 
 import datafunctions
 DATA = datafunctions.DataFunctions()
@@ -21,10 +22,10 @@ LIBRARY = library.LibraryFunctions()
 ADDON        = sys.modules[ "__main__" ].ADDON
 ADDONID      = sys.modules[ "__main__" ].ADDONID
 CWD          = sys.modules[ "__main__" ].CWD
-DATAPATH     = os.path.join( xbmc.translatePath( "special://profile/addon_data/" ).decode('utf-8'), ADDONID )
-SKINPATH     = xbmc.translatePath( "special://skin/shortcuts/" ).decode('utf-8')
-DEFAULTPATH  = xbmc.translatePath( os.path.join( CWD, 'resources', 'shortcuts').encode("utf-8") ).decode("utf-8")
 LANGUAGE     = ADDON.getLocalizedString
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/addon_data/"), ADDONID)
+SKINPATH     = xbmc.translatePath("special://skin/shortcuts/")
+DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts'))
 
 ACTION_CANCEL_DIALOG = ( 9, 10, 92, 216, 247, 257, 275, 61467, 61448, )
 ACTION_CONTEXT_MENU = ( 117, )
@@ -34,16 +35,13 @@ if not xbmcvfs.exists(DATAPATH):
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
-        try:
-            if isinstance (txt,str):
-                txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
-        except:
-            pass
+        if not isinstance (txt,str):
+            txt = txt.decode('utf-8')
+        message = u'%s: %s' % (ADDONID, txt)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 def is_hebrew(text):
-    if type(text) != unicode:
+    if not isinstance(text, str):
         text = text.decode('utf-8')
     for chr in text:
         if ord(chr) >= 1488 and ord(chr) <= 1514:
@@ -347,7 +345,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
         action = item.find( "action" ).text
         self._add_additionalproperty( listitem, "translatedPath", action )
         if "special://skin/" in action:
-            translate = xbmc.translatePath( "special://skin/" ).decode( "utf-8" )
+            translate = xbmc.translatePath("special://skin/")
             action = action.replace( "special://skin/", translate )
 
         listitem.setProperty( "path", action )
@@ -590,7 +588,6 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Enable any debug logging needed
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Settings.getSettings" }')
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
         json_response = simplejson.loads(json_query)
 
         enabledSystemDebug = False
@@ -808,7 +805,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
         currentProperties = []
 
         # Get previously loaded properties
-        path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
+        path = os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties")
         if xbmcvfs.exists( path ):
             # The properties file exists, load from it
             listProperties = eval( xbmcvfs.File( path ).read() )
@@ -852,7 +849,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Try to save the file
         try:
-            f = xbmcvfs.File( os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" ), 'w' )
+            f = xbmcvfs.File(os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties"), 'w')
             f.write( repr( saveData ).replace( "],", "],\n" ) )
             f.close()
         except:
@@ -922,7 +919,6 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
     def _load_overrides_context( self ):
         # Load context menu settings from overrides
-
         for overrideType in [ "skin", "script" ]:
             # Load overrides
             if overrideType == "skin":

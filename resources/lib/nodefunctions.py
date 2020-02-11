@@ -3,23 +3,20 @@ import os, sys, datetime, unicodedata, re, types
 import xbmc, xbmcaddon, xbmcgui, xbmcvfs, urllib
 import xml.etree.ElementTree as xmltree
 import hashlib, hashlist
-import cPickle as pickle
 from xml.dom.minidom import parse
 from traceback import print_exc
-from htmlentitydefs import name2codepoint
 from unidecode import unidecode
 from unicodeutils import try_decode
-
-if sys.version_info < (2, 7):
-    import simplejson
-else:
-    import json as simplejson
+import json as simplejson
+import pickle
+from html.entities import name2codepoint
 
 ADDON        = xbmcaddon.Addon()
-ADDONID      = ADDON.getAddonInfo('id').decode( 'utf-8' )
+ADDONID      = ADDON.getAddonInfo('id')
+KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
 LANGUAGE     = ADDON.getLocalizedString
-CWD          = ADDON.getAddonInfo('path').decode("utf-8")
-DATAPATH     = os.path.join( xbmc.translatePath( "special://profile/addon_data/" ).decode('utf-8'), ADDONID )
+CWD          = ADDON.getAddonInfo('path')
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
 
 # character entity reference
 CHAR_ENTITY_REXP = re.compile('&(%s);' % '|'.join(name2codepoint))
@@ -36,13 +33,10 @@ REMOVE_REXP = re.compile('-{2,}')
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
-        try:
-            if isinstance (txt,str):
-                txt = txt.decode('utf-8')
-            message = u'%s: %s' % (ADDONID, txt)
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
-        except:
-            pass
+        if not isinstance (txt,str):
+            txt = txt.decode('utf-8')
+        message = u'%s: %s' % (ADDONID, txt)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 class NodeFunctions():
     def __init__(self):
@@ -60,7 +54,7 @@ class NodeFunctions():
             for dir in dirs:
                 self.parse_node( os.path.join( path, dir ), dir, nodes, prefix )
             for file in files:
-                self.parse_view( os.path.join( path, file.decode( "utf-8" ) ), nodes, origPath = "%s/%s" % ( prefix, file ), prefix = prefix )
+                self.parse_view(os.path.join(path, file), nodes, origPath = "%s/%s" % (prefix, file), prefix = prefix)
         except:
             print_exc()
             return False
@@ -109,11 +103,10 @@ class NodeFunctions():
                 mediaType = contentNode.text
 
             # Get label and icon
-            label = root.find( "label" ).text.encode( "utf-8" )
-
+            label = root.find("label").text
             icon = root.find( "icon" )
             if icon is not None:
-                icon = icon.text.encode( "utf-8" )
+                icon = icon.text
             else:
                 icon = ""
 
@@ -125,7 +118,7 @@ class NodeFunctions():
                 path = root.find( "path" )
                 if path is not None:
                     # Change the origPath (the url used as the shortcut address) to it
-                    origPath = path.text.encode( "utf-8" )
+                    origPath = path.text
 
                 # Check for a grouping
                 group = root.find( "group" )
@@ -190,10 +183,10 @@ class NodeFunctions():
         else:
             return ""
 
-        customPath = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", pathEnd ) ) + "index.xml"
-        customFile = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", pathEnd ) )[:-1] + ".xml"
-        defaultPath = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", pathEnd ) ) + "index.xml"
-        defaultFile = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", pathEnd ) )[:-1] + ".xml"
+        customPath = path.replace(pathStart, os.path.join( xbmc.translatePath("special://profile"), "library", pathEnd)) + "index.xml"
+        customFile = path.replace(pathStart, os.path.join( xbmc.translatePath("special://profile"), "library", pathEnd))[:-1] + ".xml"
+        defaultPath = path.replace(pathStart, os.path.join( xbmc.translatePath("special://xbmc"), "system", "library", pathEnd)) + "index.xml"
+        defaultFile = path.replace(pathStart, os.path.join( xbmc.translatePath("special://xbmc"), "system", "library", pathEnd))[:-1] + ".xml"
 
         # Check whether the node exists - either as a parent node (with an index.xml) or a view node (append .xml)
         # in first custom video nodes, then default video nodes
@@ -210,10 +203,10 @@ class NodeFunctions():
         # Next check if there is a parent node
         if path.endswith( "/" ): path = path[ :-1 ]
         path = path.rsplit( "/", 1 )[ 0 ]
-
-        customPath = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", pathEnd ) ) + "/index.xml"
-        defaultPath = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", pathEnd ) ) + "/index.xml"
+        customPath = path.replace(pathStart, os.path.join(xbmc.translatePath("special://profile"), "library", pathEnd)) + "/index.xml"
+        defaultPath = path.replace(pathStart, os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", pathEnd)) + "/index.xml"
         nodeParent = None
+        
         if xbmcvfs.exists( customPath ):
             nodeParent = customPath
         elif xbmcvfs.exists( defaultPath ):
@@ -538,7 +531,7 @@ class NodeFunctions():
 
         # Save the new properties
         try:
-            f = xbmcvfs.File( os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" ), 'w' )
+            f = xbmcvfs.File(os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties"), 'w')
             f.write( repr( saveData ).replace( "],", "],\n" ) )
             f.close()
             log( "Properties file saved succesfully" )
