@@ -1,13 +1,14 @@
-# Skin Shortcuts - 1.0.20
+# Skin Shortcuts - 1.1.0
+**Python 3 compatible only NO Python 2 support. IS NOT BACKWARDS COMPATIBLE!!**
 
 script.skinshortcuts was written with the intention of making user customizable shortcuts on the home page easier for skinners.
 
 
 ## What's New for Skinners
 
-#### Version 1.0.20 - git version
+#### Version 1.1.0 - git version
 
-- Basic Kodi v19 compatibility
+- Kodi v19 support
 
 #### Version 1.0.17 - repo version
 
