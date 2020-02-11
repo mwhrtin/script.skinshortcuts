@@ -766,21 +766,16 @@ class LibraryFunctions():
         # Videos, Movies, TV Shows, Live TV, Music, Music Videos, Pictures, Weather, Programs,
         # Play dvd, eject tray
         # Settings, File Manager, Profiles, System Info
-        if int( KODIVERSION ) >= 18:
-            listitems.append( self._create(["ActivateWindow(Videos)", "3", "32034", {"icon": "DefaultVideo.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(Videos)", "10006", "32034", {"icon": "DefaultVideo.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(Videos)", "3", "32034", {"icon": "DefaultVideo.png"} ]) )
         listitems.append( self._create(["ActivateWindow(Videos,videodb://movies/titles/,return)", "342", "32034", {"icon": "DefaultMovies.png"} ]) )
         listitems.append( self._create(["ActivateWindow(Videos,videodb://tvshows/titles/,return)", "20343", "32034", {"icon": "DefaultTVShows.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(TVGuide)", "32022", "32034", {"icon": "DefaultTVShows.png"} ]) )
         listitems.append( self._create(["ActivateWindow(RadioGuide)", "32087", "32034", {"icon": "DefaultTVShows.png"} ]) )
 
-        if int( KODIVERSION ) >= 18:
-            listitems.append( self._create(["ActivateWindow(Music)", "2", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(Music)", "10005", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(Music)", "2", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
         listitems.append( self._create(["PlayerControl(PartyMode)", "589", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
+
         listitems.append( self._create(["PlayerControl(PartyMode(Video))", "32108", "32034", {"icon": "DefaultMusicVideos.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(Videos,videodb://musicvideos/titles/,return)", "20389", "32034", {"icon": "DefaultMusicVideos.png"} ] ) )
@@ -795,9 +790,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(FileManager)", "7", "32034", {"icon": "DefaultFolder.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(Profiles)", "13200", "32034", {"icon": "UnknownUser.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(SystemInfo)", "10007", "32034", {"icon": "SystemInfo.png"} ]) )
-
-        if int( KODIVERSION ) >= 16:
-            listitems.append( self._create(["ActivateWindow(EventLog,events://,return)", "14111", "32034", {"icon": "Events.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(EventLog,events://,return)", "14111", "32034", {"icon": "Events.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(Favourites)", "1036", "32034", {"icon": "Favourites.png"} ]) )
 
@@ -842,17 +835,9 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(ServiceSettings)", "14036", "10004", {"icon": "ServiceSettings.png"} ]) )
         listitems.append( self._create(["ActivateWindow(SystemSettings)", "13000", "10004", {"icon": "SystemSettings.png"} ]) )
         listitems.append( self._create(["ActivateWindow(SkinSettings)", "20077", "10004", {"icon": "SkinSettings.png"} ]) )
-
-        if int( KODIVERSION ) <= 16:
-            listitems.append( self._create(["ActivateWindow(VideosSettings)", "3", "10004", {"icon": "VideoSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(MusicSettings)", "2", "10004", {"icon": "MusicSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(PicturesSettings)", "1", "10004", {"icon": "PictureSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(AppearanceSettings)", "480", "10004", {"icon": "AppearanceSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(WeatherSettings)", "8", "10004", {"icon": "WeatherSettings.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(PlayerSettings)", "14200", "10004", {"icon": "PlayerSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(LibrarySettings)", "14202", "10004", {"icon": "LibrarySettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(InterfaceSettings)", "14206", "10004", {"icon": "InterfaceSettings.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(PlayerSettings)", "14200", "10004", {"icon": "PlayerSettings.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(LibrarySettings)", "14202", "10004", {"icon": "LibrarySettings.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(InterfaceSettings)", "14206", "10004", {"icon": "InterfaceSettings.png"} ]) )
 
         self.addToDictionary( "settings", listitems )
 
@@ -864,8 +849,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(TVGuide)", "22020", "32017", {"icon": "DefaultTVShows.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(TVRecordings)", "19163", "32017", {"icon": "DefaultTVShows.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(TVTimers)", "19040", "32017", {"icon": "DefaultTVShows.png"} ] ) )
-        if int( KODIVERSION ) >= 17:
-            listitems.append( self._create(["ActivateWindow(TVTimerRules)", "19138", "32017", {"icon": "DefaultTVShows.png"} ] ) )
+        listitems.append( self._create(["ActivateWindow(TVTimerRules)", "19138", "32017", {"icon": "DefaultTVShows.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(TVSearch)", "137", "32017", {"icon": "DefaultTVShows.png"} ] ) )
 
         listitems.append( self._create(["PlayPvrTV", "32066", "32017", {"icon": "DefaultTVShows.png"} ] ) )
@@ -908,8 +892,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(RadioGuide)", "22020", "32087", {"icon": "DefaultAudio.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(RadioRecordings)", "19163", "32087", {"icon": "DefaultAudio.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(RadioTimers)", "19040", "32087", {"icon": "DefaultAudio.png"} ] ) )
-        if int( KODIVERSION ) >= 17:
-            listitems.append( self._create(["ActivateWindow(RadioTimerRules)", "19138", "32087", {"icon": "DefaultAudio.png"} ] ) )
+        listitems.append( self._create(["ActivateWindow(RadioTimerRules)", "19138", "32087", {"icon": "DefaultAudio.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(RadioSearch)", "137", "32087", {"icon": "DefaultAudio.png"} ] ) )
 
         listitems.append( self._create(["PlayPvrRadio", "32067", "32087", {"icon": "DefaultAudio.png"} ] ) )
@@ -1683,10 +1666,7 @@ class LibraryFunctions():
         return False
 
     def _install_widget_provider( self, provider ):
-        if int( KODIVERSION ) >= 17:
-            executeAndObserve = ("InstallAddon(%s)", "DialogConfirm.xml", "DialogConfirm.xml" )
-        else:
-            executeAndObserve = ("RunPlugin(plugin://%s)", "DialogYesNo.xml", "DialogProgress.xml" )
+        executeAndObserve = ("InstallAddon(%s)", "DialogConfirm.xml", "DialogConfirm.xml" )
 
         xbmc.executebuiltin( executeAndObserve[ 0 ] %( provider ) )
 
@@ -2172,11 +2152,7 @@ class ShowDialog( xbmcgui.WindowXMLDialog ):
         self.getControl(1).setLabel(self.windowtitle)
 
         # Set Cancel label (Kodi 17+)
-        if int( KODIVERSION ) >= 17:
-            try:
-                self.getControl(7).setLabel(xbmc.getLocalizedString(222))
-            except:
-                log( "Unable to set label for control 7" )
+        self.getControl(7).setLabel(xbmc.getLocalizedString(222))
 
         for item in self.listing :
             listitem = xbmcgui.ListItem(label=item.getLabel(), label2=item.getLabel2())
