@@ -132,10 +132,10 @@ class NodeFunctions():
             print_exc()
 
     def isGrouped( self, path ):
-        customPathVideo = path.replace( "library://video", os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", "video" ) )[:-1]
-        defaultPathVideo = path.replace( "library://video", os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", "video" ) )[:-1]
-        customPathAudio = path.replace( "library://music", os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", "music" ) )[:-1]
-        defaultPathAudio = path.replace( "library://music", os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", "music" ) )[:-1]
+        customPathVideo = path.replace("library://video", os.path.join(xbmc.translatePath("special://profile"), "library", "video" ) )[:-1]
+        defaultPathVideo = path.replace("library://video", os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", "video" ) )[:-1]
+        customPathAudio = path.replace("library://music", os.path.join(xbmc.translatePath("special://profile"), "library", "music" ) )[:-1]
+        defaultPathAudio = path.replace("library://music", os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", "music" ) )[:-1]
 
         paths = [ customPathVideo, defaultPathVideo, customPathAudio, defaultPathAudio ]
         foundPath = False
@@ -206,7 +206,7 @@ class NodeFunctions():
         customPath = path.replace(pathStart, os.path.join(xbmc.translatePath("special://profile"), "library", pathEnd)) + "/index.xml"
         defaultPath = path.replace(pathStart, os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", pathEnd)) + "/index.xml"
         nodeParent = None
-        
+
         if xbmcvfs.exists( customPath ):
             nodeParent = customPath
         elif xbmcvfs.exists( defaultPath ):
@@ -248,10 +248,10 @@ class NodeFunctions():
         else:
             return "unknown"
 
-        customPath = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", pathEnd ) ) + "index.xml"
-        customFile = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", pathEnd ) )[:-1] + ".xml"
-        defaultPath = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", pathEnd ) ) + "index.xml"
-        defaultFile = path.replace( pathStart, os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", pathEnd ) )[:-1] + ".xml"
+        customPath = path.replace(pathStart, os.path.join(xbmc.translatePath("special://profile"), "library", pathEnd ) ) + "index.xml"
+        customFile = path.replace(pathStart, os.path.join(xbmc.translatePath("special://profile"), "library", pathEnd ) )[:-1] + ".xml"
+        defaultPath = path.replace(pathStart, os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", pathEnd ) ) + "index.xml"
+        defaultFile = path.replace(pathStart, os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", pathEnd ) )[:-1] + ".xml"
 
         # Check whether the node exists - either as a parent node (with an index.xml) or a view node (append .xml)
         # in first custom video nodes, then default video nodes
@@ -411,7 +411,7 @@ class NodeFunctions():
         xmltree.SubElement( newelement, "action" ).text = action
 
         DATA.indent( menuitems.getroot() )
-        path = xbmc.translatePath( os.path.join( "special://profile", "addon_data", ADDONID, "%s.DATA.xml" %( DATA.slugify( allLabelIDs[ selectedMenu ], True ) ) ).encode('utf-8') )
+        path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, "%s.DATA.xml" %(DATA.slugify(allLabelIDs[selectedMenu], True))))
         menuitems.write( path, encoding="UTF-8" )
 
         if isNode and selectedMenu == 1:
@@ -428,7 +428,7 @@ class NodeFunctions():
                     xmltree.SubElement( newelement, "action" ).text = "ActivateWindow(%s,%s,return)" %( window, item[ "file" ] )
 
             DATA.indent( menuitems.getroot() )
-            path = xbmc.translatePath( os.path.join( "special://profile", "addon_data", ADDONID, DATA.slugify( newLabelID, True ) + ".DATA.xml" ).encode('utf-8') )
+            path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, DATA.slugify(newLabelID, True) + ".DATA.xml"))
             menuitems.write( path, encoding="UTF-8" )
 
         # Mark that the menu needs to be rebuilt
@@ -484,7 +484,7 @@ class NodeFunctions():
             return
 
         # Load the properties
-        currentProperties, defaultProperties = DATA._get_additionalproperties( xbmc.translatePath( "special://profile/" ).decode( "utf-8" ) )
+        currentProperties, defaultProperties = DATA._get_additionalproperties(xbmc.translatePath("special://profile/" ))
         otherProperties, requires, templateOnly = DATA._getPropertyRequires()
 
         # If there aren't any currentProperties, use the defaultProperties instead
@@ -544,7 +544,7 @@ class NodeFunctions():
         # passed to us
         menuitems = DATA._get_shortcuts( group, processShortcuts = False )
         DATA.indent( menuitems.getroot() )
-        path = xbmc.translatePath( os.path.join( "special://profile", "addon_data", ADDONID, "%s.DATA.xml" %( DATA.slugify( group, True ) ) ).encode('utf-8') )
+        path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, "%s.DATA.xml" %(DATA.slugify( group, True))))
         menuitems.write( path, encoding="UTF-8" )
 
         log( "Properties updated" )

@@ -1013,7 +1013,7 @@ class LibraryFunctions():
                         name = label
                         listitem = self._create( ["::PLAYLIST>%s::" %( path[2] ), name, path[1], {"icon": "DefaultPlaylist.png"} ] )
                         listitem.setProperty( "action-play", "PlayMedia(" + playlist + ")" )
-                        listitem.setProperty( "action-show", "ActivateWindow(%s,%s,return)".encode( 'utf-8' ) %( path[2], playlist ) )
+                        listitem.setProperty("action-show", "ActivateWindow(%s,%s,return)" %(path[2], playlist))
                         listitem.setProperty( "action-party", "PlayerControl(PartyMode(%s))" %( playlist ) )
 
                         # Add widget information
@@ -1054,14 +1054,14 @@ class LibraryFunctions():
 
                 if playlist.endswith( '-randomversion.xsp' ):
                     contents = xbmcvfs.File(playlistfile, 'r')
-                    contents_data = contents.read().decode('utf-8')
-                    xmldata = xmltree.fromstring(contents_data.encode('utf-8'))
+                    contents_data = contents.read()
+                    xmldata = xmltree.fromstring(contents_data)
                     for line in xmldata.getiterator():
                         if line.tag == "name":
 
                             # Save it for the widgets list
                             # TO-DO - Localize display name
-                            returnPlaylists.append( [playlist.encode( 'utf-8' ), "(Source) " + name, name] )
+                            returnPlaylists.append([playlist, "(Source) " + name, name])
 
                             count += 1
                             break
@@ -1899,7 +1899,7 @@ class LibraryFunctions():
                 if not image and item.get("file",""):
                     image = item["file"]
                 if image:
-                    image = urllib.parse.unquote(image).decode('utf8')
+                    image = urllib.parse.unquote(image)
                     if "$INFO" in image:
                         image = image.replace("image://","")
                         if image.endswith("/"):

@@ -740,12 +740,12 @@ class GUI( xbmcgui.WindowXMLDialog ):
                 for i in range( 0, 6 ):
                     if i == 0:
                         groupName = labelIDFrom
-                        paths = [[os.path.join( DATAPATH, DATA.slugify( labelIDFrom, True ) + ".DATA.xml" ).encode( "utf-8" ), "Move"], [os.path.join( SKINPATH, DATA.slugify( defaultIDFrom ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"], [os.path.join( DEFAULTPATH, DATA.slugify( defaultIDFrom ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"], [None, "New"]]
-                        target = os.path.join( DATAPATH, DATA.slugify( labelIDTo, True ) + ".DATA.xml" ).encode( "utf-8" )
+                        paths = [[os.path.join(DATAPATH, DATA.slugify(labelIDFrom, True ) + ".DATA.xml"), "Move"], [os.path.join(SKINPATH, DATA.slugify(defaultIDFrom) + ".DATA.xml"), "Copy"], [os.path.join(DEFAULTPATH, DATA.slugify(defaultIDFrom) + ".DATA.xml"), "Copy"], [None, "New"]]
+                        target = os.path.join(DATAPATH, DATA.slugify(labelIDTo, True) + ".DATA.xml")
                     else:
                         groupName = "%s.%s" %( labelIDFrom, str( i ) )
-                        paths = [[os.path.join( DATAPATH, DATA.slugify( "%s.%s" %( labelIDFrom, str( i )), True, isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" ), "Move"], [os.path.join( SKINPATH, DATA.slugify( "%s.%s" %( defaultIDFrom, str( i ) ), isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"], [os.path.join( DEFAULTPATH, DATA.slugify( "%s.%s" %( defaultIDFrom, str( i ) ), isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"]]
-                        target = os.path.join( DATAPATH, DATA.slugify( "%s.%s" %( labelIDTo, str( i ) ), True, isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" )
+                        paths = [[os.path.join(DATAPATH, DATA.slugify("%s.%s" %(labelIDFrom, str( i )), True, isSubLevel = True) + ".DATA.xml"), "Move"], [os.path.join(SKINPATH, DATA.slugify("%s.%s" %(defaultIDFrom, str(i)), isSubLevel = True) + ".DATA.xml"), "Copy"], [os.path.join(DEFAULTPATH, DATA.slugify("%s.%s" %(defaultIDFrom, str(i)), isSubLevel = True) + ".DATA.xml"), "Copy"]]
+                        target = os.path.join(DATAPATH, DATA.slugify("%s.%s" %(labelIDTo, str(i)), True, isSubLevel = True) + ".DATA.xml")
 
                     target = try_decode( target )
 

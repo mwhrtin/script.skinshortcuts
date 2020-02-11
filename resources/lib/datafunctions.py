@@ -547,7 +547,6 @@ class DataFunctions():
         self.defaultProperties = []
 
         path = os.path.join(profileDir, "addon_data", ADDONID, xbmc.getSkinDir() + ".properties")
-        #path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
         if xbmcvfs.exists( path ):
             # The properties file exists, load from it
             try:
@@ -1011,7 +1010,7 @@ class DataFunctions():
             if files:
                 for file in files:
                     if file.endswith( ".hash" ) and not file.startswith( "%s-" %( xbmc.getSkinDir() ) ):
-                        canImport, skinName = self.parseHashFile( os.path.join( DATAPATH, file.decode( 'utf-8' ) ).encode( 'utf-8' ) )
+                        canImport, skinName = self.parseHashFile(os.path.join(DATAPATH, file))
                         if canImport == True:
                             skinNames.append( skinName )
                     elif file.endswith( ".DATA.xml" ) and not file.startswith( "%s-" %( xbmc.getSkinDir() ) ):
@@ -1081,14 +1080,14 @@ class DataFunctions():
                 newFile = oldFile.replace( skinName, xbmc.getSkinDir() )
             else:
                 newFile = "%s-%s" %( xbmc.getSkinDir(), oldFile )
-            oldPath = os.path.join( DATAPATH, oldFile.decode( 'utf-8' ) ).encode( 'utf-8' )
-            newPath = os.path.join( DATAPATH, newFile.decode( 'utf-8' ) ).encode( 'utf-8' )
+            oldPath = os.path.join(DATAPATH, oldFile)
+            newPath = os.path.join(DATAPATH, newFile)
 
             # Copy file
             xbmcvfs.copy( oldPath, newPath )
 
         # Delete any .properties file
-        propFile = os.path.join( DATAPATH, "%s.properties" %( xbmc.getSkinDir() ) ).encode( 'utf-8' )
+        propFile = os.path.join(DATAPATH, "%s.properties" %(xbmc.getSkinDir()))
         if xbmcvfs.exists( propFile ):
             xbmcvfs.delete( propFile )
 
@@ -1244,8 +1243,6 @@ class DataFunctions():
 
         # translate
         text = unicodedata.normalize('NFKD', text)
-        if sys.version_info < (3,):
-            text = text.encode('ascii', 'ignore')
 
         # replace unwanted characters
         text = REPLACE1_REXP.sub('', text.lower()) # replace ' with nothing instead with -
