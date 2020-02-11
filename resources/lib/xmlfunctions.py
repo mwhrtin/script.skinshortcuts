@@ -57,16 +57,16 @@ class XMLFunctions():
         if tree is not None:
             profiles = tree.findall( "profile" )
             for profile in profiles:
-                name = profile.find( "name" ).text.encode( "utf-8" )
-                dir = profile.find( "directory" ).text.encode( "utf-8" )
-                log("Profile found: " + name.decode("utf-8") + " (" + dir.decode("utf-8") + ")")
+                name = profile.find( "name" ).text
+                dir = profile.find( "directory" ).text
+                log("Profile found: " + name + " (" + dir + ")")
 
                 # Localise the directory
-                if b"://" in dir:
+                if "://" in dir:
                     dir = xbmc.translatePath(dir)
                 # Base if off of the master profile
                 dir = xbmc.translatePath(os.path.join("special://masterprofile", dir))
-                profilelist.append([dir, "String.IsEqual(System.ProfileName,%s)" %( name.decode("utf-8")), name.decode("utf-8")])
+                profilelist.append([dir, "String.IsEqual(System.ProfileName,%s)" %(name), name])
 
         else:
             profilelist = [["special://masterprofile", None]]
