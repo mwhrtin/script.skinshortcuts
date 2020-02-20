@@ -25,7 +25,10 @@ class Template():
         templatepath = os.path.join( SKINPATH , "template.xml" )
         self.otherTemplates = []
         try:
-            self.tree = xmltree.parse( templatepath )
+            xmlFile = xbmcvfs.File( templatepath )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            self.tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
 
             log( "Loaded template.xml file")
 

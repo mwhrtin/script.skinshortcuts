@@ -163,7 +163,10 @@ class XMLFunctions():
 
         # Get the skins addon.xml file
         addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml'))
-        addon = xmltree.parse( addonpath )
+        xmlFile = xbmcvfs.File( addonpath )
+        xmlString = xmlFile.read()
+        xmlFile.close()
+        addon = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
         extensionpoints = addon.findall( "extension" )
         paths = []
         skinpaths = []
@@ -653,7 +656,10 @@ class XMLFunctions():
 
         # Get the skins addon.xml file
         addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml'))
-        addon = xmltree.parse( addonpath )
+        xmlFile = xbmcvfs.File( addonpath )
+        xmlString = xmlFile.read()
+        xmlFile.close()
+        addon = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
         extensionpoints = addon.findall( "extension" )
         paths = []
         for extensionpoint in extensionpoints:
@@ -667,7 +673,9 @@ class XMLFunctions():
         # Save the tree
         DATA.indent( tree.getroot() )
         for path in paths:
-            tree.write( path, encoding="UTF-8" )
+            xmlFile = xbmcvfs.File( path, 'w' )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.close()
 
             # Save the hash of the file we've just written
             hasher = hashlib.md5()

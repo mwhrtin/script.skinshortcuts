@@ -151,7 +151,10 @@ class DataFunctions():
             if xbmcvfs.exists( path ):
                 file = xbmcvfs.File( path ).read()
                 self._save_hash( path, file )
-                tree = xmltree.parse( path )
+                xmlFile = xbmcvfs.File( path )
+                xmlString = xmlFile.read()
+                xmlFile.close()
+                tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
 
             if tree is not None and processShortcuts:
                 # If this is a user-selected list of shortcuts...
@@ -480,7 +483,10 @@ class DataFunctions():
 
         overridePath = os.path.join( DEFAULTPATH, "overrides.xml" )
         try:
-            tree = xmltree.parse( overridePath )
+            xmlFile = xbmcvfs.File( overridePath )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             self._save_hash( overridePath, xbmcvfs.File( overridePath ).read() )
             self.overrides[ "script" ] = tree
             return tree
@@ -501,7 +507,10 @@ class DataFunctions():
 
         overridePath = os.path.join( SKINPATH, "overrides.xml" )
         try:
-            tree = xmltree.parse( overridePath )
+            xmlFile = xbmcvfs.File( overridePath )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             self._save_hash( overridePath, xbmcvfs.File( overridePath ).read() )
             self.overrides[ "skin" ] = tree
             return tree
@@ -522,7 +531,10 @@ class DataFunctions():
 
         overridePath = os.path.join( profileDir, "overrides.xml" )
         try:
-            tree = xmltree.parse( xbmc.translatePath( overridePath ) )
+            xmlFile = xbmcvfs.File( xbmc.translatePath( overridePath ) )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             self._save_hash( overridePath, xbmcvfs.File( overridePath ).read() )
             self.overrides[ "user" ] = tree
             return tree
@@ -660,7 +672,10 @@ class DataFunctions():
         if xbmcvfs.exists( path ):
             file = xbmcvfs.File( path ).read()
             self._save_hash( path, file )
-            tree = xmltree.parse( path )
+            xmlFile = xbmcvfs.File( path )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             for node in tree.getroot().findall( "shortcut" ):
                 label = self.local( node.find( "label" ).text )[3].replace( " ", "" ).lower()
                 action = node.find( "action.text" )

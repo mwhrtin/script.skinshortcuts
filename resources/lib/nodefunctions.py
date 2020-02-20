@@ -71,7 +71,10 @@ class NodeFunctions():
             return
         try:
             # Load the xml file
-            tree = xmltree.parse( file )
+            xmlFile = xbmcvfs.File( file )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             root = tree.getroot()
 
             # Get the item index
@@ -151,7 +154,10 @@ class NodeFunctions():
         # Open the file
         try:
             # Load the xml file
-            tree = xmltree.parse( path )
+            xmlFile = xbmcvfs.File( path )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             root = tree.getroot()
 
             group = root.find( "group" )
@@ -221,7 +227,10 @@ class NodeFunctions():
             # Open the file
             try:
                 # Load the xml file
-                tree = xmltree.parse( path )
+                xmlFile = xbmcvfs.File( path )
+                xmlString = xmlFile.read()
+                xmlFile.close()
+                tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
                 root = tree.getroot()
 
                 if "visible" in root.attrib:
@@ -269,7 +278,10 @@ class NodeFunctions():
         # Open the file
         try:
             # Load the xml file
-            tree = xmltree.parse( path )
+            xmlFile = xbmcvfs.File( path )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             root = tree.getroot()
 
             mediaType = "unknown"
@@ -412,7 +424,9 @@ class NodeFunctions():
 
         DATA.indent( menuitems.getroot() )
         path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, "%s.DATA.xml" %(DATA.slugify(allLabelIDs[selectedMenu], True))))
-        menuitems.write( path, encoding="UTF-8" )
+        xmlFile = xbmcvfs.File( path, 'w' )
+        xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.close()
 
         if isNode and selectedMenu == 1:
             # We're also going to write a submenu
@@ -429,7 +443,9 @@ class NodeFunctions():
 
             DATA.indent( menuitems.getroot() )
             path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, DATA.slugify(newLabelID, True) + ".DATA.xml"))
-            menuitems.write( path, encoding="UTF-8" )
+            xmlFile = xbmcvfs.File( path, 'w' )
+            xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.close()
 
         # Mark that the menu needs to be rebuilt
         xbmcgui.Window( 10000 ).setProperty( "skinshortcuts-reloadmainmenu", "True" )
@@ -545,7 +561,9 @@ class NodeFunctions():
         menuitems = DATA._get_shortcuts( group, processShortcuts = False )
         DATA.indent( menuitems.getroot() )
         path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, "%s.DATA.xml" %(DATA.slugify( group, True))))
-        menuitems.write( path, encoding="UTF-8" )
+        xmlFile = xbmcvfs.File( path, 'w' )
+        xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.close()
 
         log( "Properties updated" )
 

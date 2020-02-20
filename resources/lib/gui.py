@@ -709,7 +709,9 @@ class GUI( xbmcgui.WindowXMLDialog ):
             path = os.path.join( DATAPATH , DATA.slugify( self.group, True, isSubLevel = isSubLevel ) + ".DATA.xml" )
             path = try_decode( path )
 
-            tree.write( path.replace( ".shortcuts", ".DATA.xml" ), encoding="UTF-8"  )
+            xmlFile = xbmcvfs.File( path.replace( ".shortcuts", ".DATA.xml" ) , 'w' )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.close()
 
             # Now make any labelID changes
             copyDefaultProperties = []
@@ -755,7 +757,9 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
                         if path[1] == "New":
                             tree = xmltree.ElementTree( xmltree.Element( "shortcuts" ) )
-                            tree.write( target, encoding="UTF-8"  )
+                            xmlFile = xbmcvfs.File( target, 'w' )
+                            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+                            xmlFile.close()
                             log( "Creating empty file - %s" %( target ) )
                             break
 
@@ -777,7 +781,9 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
                                 # Write it to the target
                                 DATA.indent( newtree.getroot() )
-                                newtree.write( target, encoding="utf-8" )
+                                xmlFile = xbmcvfs.File( target, 'w' )
+                                xmlFile.write( xmltree.tostring( newtree.getroot(), encoding='UTF-8', method='xml' ) )
+                                xmlFile.close()
                                 log( "Copying " + path[0] + " > " + target )
 
                                 # We'll need to import it's default properties, so save the groupName

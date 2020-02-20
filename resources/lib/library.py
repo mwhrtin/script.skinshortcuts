@@ -1080,7 +1080,10 @@ class LibraryFunctions():
 
         fav_file = xbmc.translatePath('special://profile/favourites.xml')
         if xbmcvfs.exists( fav_file ):
-            doc = parse( fav_file )
+            xmlFile = xbmcvfs.File( fav_file )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            doc = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             listing = doc.documentElement.getElementsByTagName( 'favourite' )
         else:
             # No favourites file found
@@ -1194,7 +1197,10 @@ class LibraryFunctions():
     def hasPluginEntryPoint( self, path ):
         # Check if an addon has a plugin entry point by parsing its addon.xml file
         try:
-            tree = xmltree.parse( os.path.join( path, "addon.xml" ) ).getroot()
+            xmlFile = xbmcvfs.File( os.path.join( path, "addon.xml" ) )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             for extension in tree.findall( "extension" ):
                 if "point" in extension.attrib and extension.attrib.get( "point" ) == "xbmc.python.pluginsource":
                     # Find out what content type it provides
@@ -1819,13 +1825,17 @@ class LibraryFunctions():
 
         # Write playlist we'll link to the menu item
         DATA.indent( tree.getroot() )
-        tree.write( os.path.join( DATAPATH, str( id ) + ".xsp" ), encoding="utf-8" )
+        xmlFile = xbmcvfs.File( os.path.join( DATAPATH, str( id ) + ".xsp" ), 'w' )
+        xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.close()
 
         # Add a random property, and save this for use in playlists/backgrounds
         order = xmltree.SubElement( root, "order" )
         order.text = "random"
         DATA.indent( tree.getroot() )
-        tree.write( os.path.join( DATAPATH, str( id ) + "-randomversion.xsp" ), encoding="utf-8" )
+        xmlFile = xbmcvfs.File( os.path.join( DATAPATH, str( id ) + "-randomversion.xsp" ), 'w' )
+        xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.close()
 
         return str( id ) + ".xsp"
 
@@ -1862,22 +1872,32 @@ class LibraryFunctions():
                 return
 
             # Load the tree and change the name
-            tree = xmltree.parse( filename )
+            xmlFile = xbmcvfs.File( filename )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             name = tree.getroot().find( "name" )
             name.text = newLabel
 
             # Write the tree
             DATA.indent( tree.getroot() )
-            tree.write( filename, encoding="utf-8" )
+            xmlFile = xbmcvfs.File( filename, 'w' )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.close()
 
             # Load the random tree and change the name
-            tree = xmltree.parse( filename.replace( ".xsp", "-randomversion.xsp" ) )
+            xmlFile = xbmcvfs.File( filename.replace( ".xsp", "-randomversion.xsp" ) )
+            xmlString = xmlFile.read()
+            xmlFile.close()
+            tree = xmltree.ElementTree( xmltree.fromstring( xmlString ) )
             name = tree.getroot().find( "name" )
             name.text = newLabel
 
             # Write the random tree
             DATA.indent( tree.getroot() )
-            tree.write( filename.replace( ".xsp", "-randomversion.xsp" ), encoding="utf-8" )
+            xmlFile = xbmcvfs.File( filename.replace( ".xsp", "-randomversion.xsp" ), 'w' )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.close()
 
     def getImagesFromVfsPath(self, path):
         #this gets images from a vfs path to be used as backgrounds or icons
