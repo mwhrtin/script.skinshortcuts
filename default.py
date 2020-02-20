@@ -10,36 +10,19 @@ from time import gmtime, strftime
 from datetime import datetime
 from traceback import print_exc
 import json as simplejson
+import urllib.request, urllib.parse, urllib.error
+import pickle
+import _thread as thread
 
-if sys.version_info.major == 3:
-    import urllib.request, urllib.parse, urllib.error
-    import pickle
-    import _thread as thread
-else:
-    import urllib
-    import cPickle as pickle
-    import thread
-
-# Uncomment when profiling performance
-# import cProfile
-
-ADDON            = xbmcaddon.Addon()
-ADDONID          = ADDON.getAddonInfo('id')
-ADDONVERSION     = ADDON.getAddonInfo('version')
-LANGUAGE         = ADDON.getLocalizedString
-
-if sys.version_info.major == 3:
-    CWD          = ADDON.getAddonInfo('path')
-    ADDONNAME    = ADDON.getAddonInfo('name')
-    RESOURCE     = xbmc.translatePath(os.path.join(CWD, 'resources', 'lib'))
-    DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
-    MASTERPATH   = os.path.join(xbmc.translatePath("special://masterprofile/"), "addon_data", ADDONID)
-else:
-    CWD          = ADDON.getAddonInfo('path').decode('utf-8')
-    ADDONNAME    = ADDON.getAddonInfo('NAME').decode('utf-8')
-    RESOURCE     = xbmc.translatePath(os.path.join(CWD, 'resources', 'lib')).decode("utf-8")
-    DATAPATH     = os.path.join(xbmc.translatePath("special://profile/").decode('utf-8' ), "addon_data", ADDONID)
-    MASTERPATH   = os.path.join(xbmc.translatePath("special://masterprofile/").decode('utf-8'), "addon_data", ADDONID)
+ADDON        = xbmcaddon.Addon()
+ADDONID      = ADDON.getAddonInfo('id')
+ADDONVERSION = ADDON.getAddonInfo('version')
+LANGUAGE     = ADDON.getLocalizedString
+CWD          = ADDON.getAddonInfo('path')
+ADDONNAME    = ADDON.getAddonInfo('name')
+RESOURCE     = xbmc.translatePath(os.path.join(CWD, 'resources', 'lib'))
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
+MASTERPATH   = os.path.join(xbmc.translatePath("special://masterprofile/"), "addon_data", ADDONID)
 
 sys.path.append(RESOURCE)
 
@@ -49,23 +32,14 @@ DATA = datafunctions.DataFunctions()
 LIBRARY = library.LibraryFunctions()
 NODE = nodefunctions.NodeFunctions()
 
-ISEMPTY = "IsEmpty"
-if int( xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0] ) >= 17:
-    ISEMPTY = "String.IsEmpty"
-
 hashlist = []
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
         if not isinstance (txt,str):
             txt = txt.decode('utf-8')
-
         message = u'%s: %s' % (ADDONID, txt)
-
-        if sys.version_info.major == 3:
-            xbmc.log(msg=message, level=xbmc.LOGDEBUG)
-        else:
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 class Main:
     # MAIN ENTRY POINT
@@ -158,7 +132,7 @@ class Main:
 
             # Check if we should show the custom option (if the relevant widgetPath skin string is provided and isn't empty)
             showCustom = False
-            if self.WIDGETPATH and xbmc.getCondVisibility( "!%s(Skin.String(%s))" %( ISEMPTY, self.WIDGETPATH ) ):
+            if self.WIDGETPATH and xbmc.getCondVisibility("!String.IsEmpty(Skin.String(%s))" %(self.WIDGETPATH)):
                 showCustom = True
 
             if self.GROUPING:
@@ -176,11 +150,7 @@ class Main:
 
             elif selectedShortcut.getProperty( "Path" ) and selectedShortcut.getProperty( "custom" ) == "true":
                 # The user updated the path - so we just set that property
-
-                if sys.version_info.major == 3:
-                    xbmc.executebuiltin("Skin.SetString(%s,%s)" %(self.WIDGETPATH, urllib.parse.unquote(selectedShortcut.getProperty("Path"))))
-                else:
-                    xbmc.executebuiltin( "Skin.SetString(%s,%s)" %( self.WIDGETPATH, urllib.unquote( selectedShortcut.getProperty( "Path" ) ) ) )
+                xbmc.executebuiltin("Skin.SetString(%s,%s)" %(self.WIDGETPATH, urllib.parse.unquote(selectedShortcut.getProperty("Path"))))
 
             elif selectedShortcut.getProperty( "Path" ):
                 # The user selected the widget they wanted
@@ -205,10 +175,8 @@ class Main:
                     else:
                         xbmc.executebuiltin( "Skin.Reset(%s)" %( self.WIDGETTARGET ) )
                 if self.WIDGETPATH:
-                    if selectedShortcut.getProperty("widgetPath") and sys.version_info.major == 3:
+                    if selectedShortcut.getProperty("widgetPath"):
                         xbmc.executebuiltin("Skin.SetString(%s,%s)" %(self.WIDGETPATH, urllib.parse.unquote(selectedShortcut.getProperty("widgetPath"))))
-                    elif selectedShortcut.getProperty( "widgetPath" ):
-                        xbmc.executebuiltin( "Skin.SetString(%s,%s)" %( self.WIDGETPATH, urllib.unquote( selectedShortcut.getProperty( "widgetPath" ) ) ) )
                     else:
                         xbmc.executebuiltin( "Skin.Reset(%s)" %( self.WIDGETPATH ) )
 
@@ -298,24 +266,15 @@ class Main:
         self.DEFAULTGROUP = params.get( "defaultGroup", None )
 
         # Properties from context menu addon
-        if sys.version_info.major == 3:
-            self.CONTEXTFILENAME = urllib.parse.unquote(params.get("filename", "" ))
-        else:
-            self.CONTEXTFILENAME = urllib.unquote(params.get("filename", "" ))
-
+        self.CONTEXTFILENAME = urllib.parse.unquote(params.get("filename", "" ))
         self.CONTEXTLABEL = params.get( "label", "" )
         self.CONTEXTICON = params.get( "icon", "" )
         self.CONTEXTCONTENT = params.get( "content", "" )
         self.CONTEXTWINDOW = params.get( "window", "" )
 
         # Properties from external request to set properties
-        if sys.version_info.major == 3:
-            self.PROPERTIES = urllib.parse.unquote(params.get("property", "" ))
-            self.VALUES = urllib.parse.unquote(params.get("value", "" ))
-        else:
-            self.PROPERTIES = urllib.unquote(params.get("property", "" ))
-            self.VALUES = urllib.unquote(params.get("value", "" ))
-
+        self.PROPERTIES = urllib.parse.unquote(params.get("property", "" ))
+        self.VALUES = urllib.parse.unquote(params.get("value", "" ))
         self.LABELID = params.get( "labelID", "" )
 
 
@@ -324,10 +283,7 @@ class Main:
     # -----------------
 
     def _launch_shortcut( self, path ):
-        if sys.version_info.major == 3:
-            action = urllib.parse.unquote(self.PATH)
-        else:
-            action = urllib.unquote( self.PATH )
+        action = urllib.parse.unquote(self.PATH)
 
         if action.find("::MULTIPLE::") == -1:
             # Single action, run it
@@ -389,12 +345,7 @@ class Main:
 
                         #if file != "settings.xml" and ( not isShared or file.startswith( "%s-" %( xbmc.getSkinDir() ) ) ) or file == "%s.properties" %( xbmc.getSkinDir() ):
                         if deleteFile:
-
-                            if sys.version_info.major == 3:
-                                file_path = os.path.join(DATAPATH, file)
-                            else:
-                                file_path = os.path.join( DATAPATH, file.decode( 'utf-8' ) ).encode( 'utf-8' )
-
+                            file_path = os.path.join(DATAPATH, file)
                             if xbmcvfs.exists( file_path ):
                                 try:
                                     xbmcvfs.delete( file_path )
@@ -410,7 +361,7 @@ class Main:
     # Functions for providing whoe menu in single list
     def _hidesubmenu( self, menuid ):
         count = 0
-        while xbmc.getCondVisibility( "!%s(Container(%s).ListItem(%i).Property(isSubmenu))" %( ISEMPTY, menuid, count ) ):
+        while xbmc.getCondVisibility("!String.IsEmpty(Container(%s).ListItem(%i).Property(isSubmenu))" %(menuid, count)):
             count -= 1
 
         if count != 0:
@@ -420,7 +371,7 @@ class Main:
 
     def _resetlist( self, menuid, action ):
         count = 0
-        while xbmc.getCondVisibility( "!%s(Container(%s).ListItemNoWrap(%i).Label)" %( ISEMPTY, menuid, count ) ):
+        while xbmc.getCondVisibility("!String.IsEmpty(Container(%s).ListItemNoWrap(%i).Label)" %(menuid, count)):
             count -= 1
 
         count += 1
@@ -428,10 +379,7 @@ class Main:
         if count != 0:
             xbmc.executebuiltin( "Control.Move(" + menuid + "," + str( count ) + " )" )
 
-        if sys.version_info.major == 3:
-            xbmc.executebuiltin(urllib.parse.unquote(action))
-        else:
-            xbmc.executebuiltin( urllib.unquote( action ) )
+        xbmc.executebuiltin(urllib.parse.unquote(action))
 
 if ( __name__ == "__main__" ):
     log('script version %s started' % ADDONVERSION)

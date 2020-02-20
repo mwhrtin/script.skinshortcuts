@@ -9,46 +9,26 @@ from unidecode import unidecode
 from unicodeutils import try_decode
 import datafunctions, nodefunctions
 import json as simplejson
-
-if sys.version_info.major == 3:
-    import urllib.request, urllib.parse, urllib.error
-else:
-    import urllib
+import urllib.request, urllib.parse, urllib.error
 
 DATA = datafunctions.DataFunctions()
 NODE = nodefunctions.NodeFunctions()
-
 ADDON        = sys.modules[ "__main__" ].ADDON
 ADDONID      = sys.modules[ "__main__" ].ADDONID
 CWD          = sys.modules[ "__main__" ].CWD
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
 LANGUAGE     = sys.modules[ "__main__" ].LANGUAGE
 KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
-
-if sys.version_info.major == 3:
-    DATAPATH = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
-else:
-    DATAPATH = os.path.join(xbmc.translatePath("special://profile/").decode('utf-8' ), "addon_data", ADDONID)
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
         if not isinstance (txt,str):
             txt = txt.decode('utf-8')
-
         message = u'%s: %s' % (ADDONID, txt)
-
-        if sys.version_info.major == 3:
-            xbmc.log(msg=message, level=xbmc.LOGDEBUG)
-        else:
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 def kodiwalk(path, stringForce = False):
     json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"%s","media":"files"},"id":1}' % str(path))
-
-    if sys.version_info.major == 3:
-        json_query = json_query
-    else:
-        json_query = unicode(json_query, 'utf-8', errors='ignore')
-
     json_response = simplejson.loads(json_query)
     files = []
     if 'result' in json_response and 'files' in json_response['result'] and json_response['result']['files'] is not None:
@@ -729,19 +709,12 @@ class LibraryFunctions():
             prefix = "library://music"
             action = "||AUDIO||"
 
-        if sys.version_info.major == 3:
-            rootdir = os.path.join(xbmc.translatePath("special://profile"), "library", library)
-        else:
-            rootdir = os.path.join( xbmc.translatePath( "special://profile".decode('utf-8') ), "library", library )
-
+        rootdir = os.path.join(xbmc.translatePath("special://profile"), "library", library)
         if type == "custom":
             log( "Listing custom %s nodes..." %( library ) )
-        elif sys.version_info.major == 3:
+        else:
             rootdir = os.path.join(xbmc.translatePath("special://xbmc"), "system", "library", library)
             log("Listing default %s nodes..." %(library))
-        else:
-            rootdir = os.path.join( xbmc.translatePath( "special://xbmc".decode('utf-8') ), "system", "library", library )
-            log( "Listing default %s nodes..." %( library ) )
 
         nodes = NODE.get_nodes( rootdir, prefix )
         if nodes == False or len( nodes ) == 0:
@@ -785,21 +758,16 @@ class LibraryFunctions():
         # Videos, Movies, TV Shows, Live TV, Music, Music Videos, Pictures, Weather, Programs,
         # Play dvd, eject tray
         # Settings, File Manager, Profiles, System Info
-        if int( KODIVERSION ) >= 18:
-            listitems.append( self._create(["ActivateWindow(Videos)", "3", "32034", {"icon": "DefaultVideo.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(Videos)", "10006", "32034", {"icon": "DefaultVideo.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(Videos)", "3", "32034", {"icon": "DefaultVideo.png"} ]) )
         listitems.append( self._create(["ActivateWindow(Videos,videodb://movies/titles/,return)", "342", "32034", {"icon": "DefaultMovies.png"} ]) )
         listitems.append( self._create(["ActivateWindow(Videos,videodb://tvshows/titles/,return)", "20343", "32034", {"icon": "DefaultTVShows.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(TVGuide)", "32022", "32034", {"icon": "DefaultTVShows.png"} ]) )
         listitems.append( self._create(["ActivateWindow(RadioGuide)", "32087", "32034", {"icon": "DefaultTVShows.png"} ]) )
 
-        if int( KODIVERSION ) >= 18:
-            listitems.append( self._create(["ActivateWindow(Music)", "2", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(Music)", "10005", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(Music)", "2", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
         listitems.append( self._create(["PlayerControl(PartyMode)", "589", "32034", {"icon": "DefaultMusicAlbums.png"} ]) )
+
         listitems.append( self._create(["PlayerControl(PartyMode(Video))", "32108", "32034", {"icon": "DefaultMusicVideos.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(Videos,videodb://musicvideos/titles/,return)", "20389", "32034", {"icon": "DefaultMusicVideos.png"} ] ) )
@@ -814,9 +782,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(FileManager)", "7", "32034", {"icon": "DefaultFolder.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(Profiles)", "13200", "32034", {"icon": "UnknownUser.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(SystemInfo)", "10007", "32034", {"icon": "SystemInfo.png"} ]) )
-
-        if int( KODIVERSION ) >= 16:
-            listitems.append( self._create(["ActivateWindow(EventLog,events://,return)", "14111", "32034", {"icon": "Events.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(EventLog,events://,return)", "14111", "32034", {"icon": "Events.png"} ]) )
 
         listitems.append( self._create(["ActivateWindow(Favourites)", "1036", "32034", {"icon": "Favourites.png"} ]) )
 
@@ -861,17 +827,9 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(ServiceSettings)", "14036", "10004", {"icon": "ServiceSettings.png"} ]) )
         listitems.append( self._create(["ActivateWindow(SystemSettings)", "13000", "10004", {"icon": "SystemSettings.png"} ]) )
         listitems.append( self._create(["ActivateWindow(SkinSettings)", "20077", "10004", {"icon": "SkinSettings.png"} ]) )
-
-        if int( KODIVERSION ) <= 16:
-            listitems.append( self._create(["ActivateWindow(VideosSettings)", "3", "10004", {"icon": "VideoSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(MusicSettings)", "2", "10004", {"icon": "MusicSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(PicturesSettings)", "1", "10004", {"icon": "PictureSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(AppearanceSettings)", "480", "10004", {"icon": "AppearanceSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(WeatherSettings)", "8", "10004", {"icon": "WeatherSettings.png"} ]) )
-        else:
-            listitems.append( self._create(["ActivateWindow(PlayerSettings)", "14200", "10004", {"icon": "PlayerSettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(LibrarySettings)", "14202", "10004", {"icon": "LibrarySettings.png"} ]) )
-            listitems.append( self._create(["ActivateWindow(InterfaceSettings)", "14206", "10004", {"icon": "InterfaceSettings.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(PlayerSettings)", "14200", "10004", {"icon": "PlayerSettings.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(LibrarySettings)", "14202", "10004", {"icon": "LibrarySettings.png"} ]) )
+        listitems.append( self._create(["ActivateWindow(InterfaceSettings)", "14206", "10004", {"icon": "InterfaceSettings.png"} ]) )
 
         self.addToDictionary( "settings", listitems )
 
@@ -883,8 +841,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(TVGuide)", "22020", "32017", {"icon": "DefaultTVShows.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(TVRecordings)", "19163", "32017", {"icon": "DefaultTVShows.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(TVTimers)", "19040", "32017", {"icon": "DefaultTVShows.png"} ] ) )
-        if int( KODIVERSION ) >= 17:
-            listitems.append( self._create(["ActivateWindow(TVTimerRules)", "19138", "32017", {"icon": "DefaultTVShows.png"} ] ) )
+        listitems.append( self._create(["ActivateWindow(TVTimerRules)", "19138", "32017", {"icon": "DefaultTVShows.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(TVSearch)", "137", "32017", {"icon": "DefaultTVShows.png"} ] ) )
 
         listitems.append( self._create(["PlayPvrTV", "32066", "32017", {"icon": "DefaultTVShows.png"} ] ) )
@@ -895,12 +852,6 @@ class LibraryFunctions():
         # Add tv channels
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "PVR.GetChannels", "params": { "channelgroupid": "alltv", "properties": ["thumbnail", "channeltype", "hidden", "locked", "channel", "lastplayed"] } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
@@ -913,12 +864,6 @@ class LibraryFunctions():
         # Add radio channels
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "PVR.GetChannels", "params": { "channelgroupid": "allradio", "properties": ["thumbnail", "channeltype", "hidden", "locked", "channel", "lastplayed"] } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
@@ -937,8 +882,7 @@ class LibraryFunctions():
         listitems.append( self._create(["ActivateWindow(RadioGuide)", "22020", "32087", {"icon": "DefaultAudio.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(RadioRecordings)", "19163", "32087", {"icon": "DefaultAudio.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(RadioTimers)", "19040", "32087", {"icon": "DefaultAudio.png"} ] ) )
-        if int( KODIVERSION ) >= 17:
-            listitems.append( self._create(["ActivateWindow(RadioTimerRules)", "19138", "32087", {"icon": "DefaultAudio.png"} ] ) )
+        listitems.append( self._create(["ActivateWindow(RadioTimerRules)", "19138", "32087", {"icon": "DefaultAudio.png"} ] ) )
         listitems.append( self._create(["ActivateWindow(RadioSearch)", "137", "32087", {"icon": "DefaultAudio.png"} ] ) )
 
         listitems.append( self._create(["PlayPvrRadio", "32067", "32087", {"icon": "DefaultAudio.png"} ] ) )
@@ -973,12 +917,6 @@ class LibraryFunctions():
         # Add video sources
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetSources", "params": { "media": "video" } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
@@ -992,12 +930,6 @@ class LibraryFunctions():
         # Add audio sources
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetSources", "params": { "media": "music" } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
@@ -1011,12 +943,6 @@ class LibraryFunctions():
         # Add picture sources
         listitems = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetSources", "params": { "media": "pictures" } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
@@ -1038,24 +964,13 @@ class LibraryFunctions():
                 try:
                     playlist = file['path']
                     label = file['label']
-
-                    if sys.version_info.major == 3:
-                        playlistfile = xbmc.translatePath(playlist)
-                    else:
-                        playlistfile = xbmc.translatePath( playlist ).decode('utf-8')
-
+                    playlistfile = xbmc.translatePath(playlist)
                     mediaLibrary = path[2]
 
                     if playlist.endswith( '.xsp' ):
                         contents = xbmcvfs.File(playlistfile, 'r')
-
-                        if sys.version_info.major == 3:
-                            contents_data = contents.read()
-                            xmldata = xmltree.fromstring(contents_data)
-                        else:
-                            contents_data = contents.read().decode('utf-8')
-                            xmldata = xmltree.fromstring(contents_data.encode('utf-8'))
-
+                        contents_data = contents.read()
+                        xmldata = xmltree.fromstring(contents_data)
                         mediaType = "unknown"
                         for line in xmldata.getiterator():
                             if line.tag == "smartplaylist":
@@ -1074,12 +989,7 @@ class LibraryFunctions():
                                 # Create a list item
                                 listitem = self._create(["::PLAYLIST>%s::" %( mediaLibrary ), name, path[1], {"icon": "DefaultPlaylist.png"} ])
                                 listitem.setProperty( "action-play", "PlayMedia(" + playlist + ")" )
-
-                                if sys.version_info.major == 3:
-                                    listitem.setProperty("action-show", "ActivateWindow(" + mediaLibrary + "," + playlist + ",return)")
-                                else:
-                                    listitem.setProperty( "action-show", "ActivateWindow(" + mediaLibrary + "," + playlist + ",return)".encode( 'utf-8' ) )
-
+                                listitem.setProperty("action-show", "ActivateWindow(" + mediaLibrary + "," + playlist + ",return)")
                                 listitem.setProperty( "action-party", "PlayerControl(PartyMode(%s))" %( playlist ) )
 
                                 # Add widget information
@@ -1103,7 +1013,7 @@ class LibraryFunctions():
                         name = label
                         listitem = self._create( ["::PLAYLIST>%s::" %( path[2] ), name, path[1], {"icon": "DefaultPlaylist.png"} ] )
                         listitem.setProperty( "action-play", "PlayMedia(" + playlist + ")" )
-                        listitem.setProperty( "action-show", "ActivateWindow(%s,%s,return)".encode( 'utf-8' ) %( path[2], playlist ) )
+                        listitem.setProperty("action-show", "ActivateWindow(%s,%s,return)" %(path[2], playlist))
                         listitem.setProperty( "action-party", "PlayerControl(PartyMode(%s))" %( playlist ) )
 
                         # Add widget information
@@ -1140,22 +1050,18 @@ class LibraryFunctions():
             for file in kodiwalk( path ):
                 playlist = file['path']
                 label = file['label']
-
-                if sys.version_info.major == 3:
-                    playlistfile = xbmc.translatePath(playlist)
-                else:
-                    playlistfile = xbmc.translatePath( playlist ).decode('utf-8')
+                playlistfile = xbmc.translatePath(playlist)
 
                 if playlist.endswith( '-randomversion.xsp' ):
                     contents = xbmcvfs.File(playlistfile, 'r')
-                    contents_data = contents.read().decode('utf-8')
-                    xmldata = xmltree.fromstring(contents_data.encode('utf-8'))
+                    contents_data = contents.read()
+                    xmldata = xmltree.fromstring(contents_data)
                     for line in xmldata.getiterator():
                         if line.tag == "name":
 
                             # Save it for the widgets list
                             # TO-DO - Localize display name
-                            returnPlaylists.append( [playlist.encode( 'utf-8' ), "(Source) " + name, name] )
+                            returnPlaylists.append([playlist, "(Source) " + name, name])
 
                             count += 1
                             break
@@ -1172,11 +1078,7 @@ class LibraryFunctions():
         listitems = []
         listing = None
 
-        if sys.version_info.major == 3:
-            fav_file = xbmc.translatePath('special://profile/favourites.xml')
-        else:
-            fav_file = xbmc.translatePath( 'special://profile/favourites.xml' ).decode("utf-8")
-
+        fav_file = xbmc.translatePath('special://profile/favourites.xml')
         if xbmcvfs.exists( fav_file ):
             doc = parse( fav_file )
             listing = doc.documentElement.getElementsByTagName( 'favourite' )
@@ -1229,23 +1131,12 @@ class LibraryFunctions():
                 shortcutType = "::SCRIPT::32012"
 
             json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Addons.Getaddons", "params": { "content": "%s", "properties": ["name", "path", "thumbnail", "enabled"] } }' % contenttype)
-
-            if sys.version_info.major == 3:
-                json_query = json_query
-            else:
-                json_query = unicode(json_query, 'utf-8', errors='ignore')
-
             json_response = simplejson.loads(json_query)
 
             if 'result' in json_response and 'addons' in json_response['result'] and json_response['result']['addons'] is not None:
                 for item in json_response['result']['addons']:
                     if item['enabled'] == True:
-
-                        if sys.version_info.major == 3:
-                            path = "RunAddOn(" + item['addonid'] + ")"
-                        else:
-                            path = "RunAddOn(" + item['addonid'].encode('utf-8') + ")"
-
+                        path = "RunAddOn(" + item['addonid'] + ")"
                         action = None
                         thumb = "DefaultAddon.png"
                         if item['thumbnail'] != "":
@@ -1256,13 +1147,8 @@ class LibraryFunctions():
 
                         # If this is a plugin, mark that we can browse it
                         if item[ "type" ] == "xbmc.python.pluginsource":
-
-                            if sys.version_info.major == 3:
-                                path = "||BROWSE||" + item['addonid']
-                                action = "RunAddOn(" + item['addonid'] + ")"
-                            else:
-                                path = "||BROWSE||" + item['addonid'].encode('utf-8')
-                                action = "RunAddOn(" + item['addonid'].encode('utf-8') + ")"
+                            path = "||BROWSE||" + item['addonid']
+                            action = "RunAddOn(" + item['addonid'] + ")"
 
                             listitem.setProperty( "path", path )
                             listitem.setProperty( "action", action )
@@ -1281,12 +1167,8 @@ class LibraryFunctions():
                                 if content in contentData:
                                     # Add it as a plugin in the relevant category
                                     otherItem = self._create([path, item['name'] + "  >", contentData[ content ][ 0 ], {"icon": "DefaultAddon.png", "thumb": thumb} ])
-                                    if sys.version_info.major == 3:
-                                        otherItem.setProperty("path", "||BROWSE||" + item['addonid'])
-                                        otherItem.setProperty("action", "RunAddOn(" + item['addonid'] + ")")
-                                    else:
-                                        otherItem.setProperty( "path", "||BROWSE||" + item['addonid'].encode('utf-8') )
-                                        otherItem.setProperty( "action", "RunAddOn(" + item['addonid'].encode('utf-8') + ")" )
+                                    otherItem.setProperty("path", "||BROWSE||" + item['addonid'])
+                                    otherItem.setProperty("action", "RunAddOn(" + item['addonid'] + ")")
                                     contentData[ content ][ 1 ][ item[ "name" ] ] = otherItem
                                     # If it's executable, add it to our seperate program plugins for widgets
                                     if content == "executable":
@@ -1462,12 +1344,6 @@ class LibraryFunctions():
 
         #we retrieve a whole bunch of properties, needed to guess the content type properly
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetDirectory", "params": { "properties": ["title", "file", "thumbnail", "episode", "showtitle", "season", "album", "artist", "imdbnumber", "firstaired", "mpaa", "trailer", "studio", "art"], "directory": "' + location + '", "media": "files" } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         # Add all directories returned by the json query
@@ -1775,10 +1651,7 @@ class LibraryFunctions():
         return False
 
     def _install_widget_provider( self, provider ):
-        if int( KODIVERSION ) >= 17:
-            executeAndObserve = ("InstallAddon(%s)", "DialogConfirm.xml", "DialogConfirm.xml" )
-        else:
-            executeAndObserve = ("RunPlugin(plugin://%s)", "DialogYesNo.xml", "DialogProgress.xml" )
+        executeAndObserve = ("InstallAddon(%s)", "DialogConfirm.xml", "DialogConfirm.xml" )
 
         xbmc.executebuiltin( executeAndObserve[ 0 ] %( provider ) )
 
@@ -2010,12 +1883,6 @@ class LibraryFunctions():
         #this gets images from a vfs path to be used as backgrounds or icons
         images = []
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Files.GetDirectory", "params": { "properties": ["title", "art", "file", "fanart"], "directory": "' + path + '", "media": "files" } }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
         if 'result' in json_response and 'files' in json_response['result'] and json_response['result']['files']:
             json_result = json_response['result']['files']
@@ -2032,11 +1899,7 @@ class LibraryFunctions():
                 if not image and item.get("file",""):
                     image = item["file"]
                 if image:
-                    if sys.version_info.major == 3:
-                        image = urllib.parse.unquote(image).decode('utf8')
-                    else:
-                        image = urllib.unquote(image).decode('utf8')
-
+                    image = urllib.parse.unquote(image)
                     if "$INFO" in image:
                         image = image.replace("image://","")
                         if image.endswith("/"):
@@ -2273,11 +2136,7 @@ class ShowDialog( xbmcgui.WindowXMLDialog ):
         self.getControl(1).setLabel(self.windowtitle)
 
         # Set Cancel label (Kodi 17+)
-        if int( KODIVERSION ) >= 17:
-            try:
-                self.getControl(7).setLabel(xbmc.getLocalizedString(222))
-            except:
-                log( "Unable to set label for control 7" )
+        self.getControl(7).setLabel(xbmc.getLocalizedString(222))
 
         for item in self.listing :
             listitem = xbmcgui.ListItem(label=item.getLabel(), label2=item.getLabel2())

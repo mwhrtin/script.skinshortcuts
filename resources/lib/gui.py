@@ -10,13 +10,8 @@ import calendar
 from time import gmtime, strftime
 import random
 import json as simplejson
-
-if sys.version_info.major == 3:
-    import urllib.request, urllib.parse, urllib.error
-    import _thread as thread
-else:
-    import urllib
-    import thread
+import urllib.request, urllib.parse, urllib.error
+import _thread as thread
 
 import datafunctions
 DATA = datafunctions.DataFunctions()
@@ -28,23 +23,12 @@ ADDON        = sys.modules[ "__main__" ].ADDON
 ADDONID      = sys.modules[ "__main__" ].ADDONID
 CWD          = sys.modules[ "__main__" ].CWD
 LANGUAGE     = ADDON.getLocalizedString
-KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
-
-if sys.version_info.major == 3:
-    DATAPATH     = os.path.join(xbmc.translatePath("special://profile/addon_data/"), ADDONID)
-    SKINPATH     = xbmc.translatePath("special://skin/shortcuts/")
-    DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts'))
-else:
-    DATAPATH     = os.path.join(xbmc.translatePath("special://profile/addon_data/").decode('utf-8'), ADDONID)
-    SKINPATH     = xbmc.translatePath("special://skin/shortcuts/").decode('utf-8')
-    DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts').encode("utf-8")).decode("utf-8")
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/addon_data/"), ADDONID)
+SKINPATH     = xbmc.translatePath("special://skin/shortcuts/")
+DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts'))
 
 ACTION_CANCEL_DIALOG = ( 9, 10, 92, 216, 247, 257, 275, 61467, 61448, )
 ACTION_CONTEXT_MENU = ( 117, )
-
-ISEMPTY = "IsEmpty"
-if int( KODIVERSION ) >= 17:
-    ISEMPTY = "String.IsEmpty"
 
 if not xbmcvfs.exists(DATAPATH):
     xbmcvfs.mkdir(DATAPATH)
@@ -53,13 +37,8 @@ def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
         if not isinstance (txt,str):
             txt = txt.decode('utf-8')
-
         message = u'%s: %s' % (ADDONID, txt)
-
-        if sys.version_info.major == 3:
-            xbmc.log(msg=message, level=xbmc.LOGDEBUG)
-        else:
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 def is_hebrew(text):
     if not isinstance(text, str):
@@ -158,19 +137,19 @@ class GUI( xbmcgui.WindowXMLDialog ):
             # Set enabled condition for various controls
             has111 = True
             try:
-                self.getControl( 111 ).setEnableCondition( "%s(Container(211).ListItem.Property(LOCKED))" %( ISEMPTY ) )
+                self.getControl(111).setEnableCondition("String.IsEmpty(Container(211).ListItem.Property(LOCKED))")
             except:
                 has111 = False
             try:
-                self.getControl( 302 ).setEnableCondition( "%s(Container(211).ListItem.Property(LOCKED))" %( ISEMPTY ) )
+                self.getControl(302).setEnableCondition("String.IsEmpty(Container(211).ListItem.Property(LOCKED))")
             except:
                 pass
             try:
-                self.getControl( 307 ).setEnableCondition( "%s(Container(211).ListItem.Property(LOCKED))" %( ISEMPTY ) )
+                self.getControl(307).setEnableCondition("String.IsEmpty(Container(211).ListItem.Property(LOCKED))")
             except:
                 pass
             try:
-                self.getControl( 401 ).setEnableCondition( "%s(Container(211).ListItem.Property(LOCKED))" %( ISEMPTY ) )
+                self.getControl(401).setEnableCondition("String.IsEmpty(Container(211).ListItem.Property(LOCKED))")
             except:
                 pass
 
@@ -366,12 +345,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
         action = item.find( "action" ).text
         self._add_additionalproperty( listitem, "translatedPath", action )
         if "special://skin/" in action:
-
-            if sys.version_info.major == 3:
-                translate = xbmc.translatePath("special://skin/")
-            else:
-                translate = xbmc.translatePath( "special://skin/" ).decode( "utf-8" )
-
+            translate = xbmc.translatePath("special://skin/")
             action = action.replace( "special://skin/", translate )
 
         listitem.setProperty( "path", action )
@@ -614,12 +588,6 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Enable any debug logging needed
         json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Settings.getSettings" }')
-
-        if sys.version_info.major == 3:
-            json_query = json_query
-        else:
-            json_query = unicode(json_query, 'utf-8', errors='ignore')
-
         json_response = simplejson.loads(json_query)
 
         enabledSystemDebug = False
@@ -772,12 +740,12 @@ class GUI( xbmcgui.WindowXMLDialog ):
                 for i in range( 0, 6 ):
                     if i == 0:
                         groupName = labelIDFrom
-                        paths = [[os.path.join( DATAPATH, DATA.slugify( labelIDFrom, True ) + ".DATA.xml" ).encode( "utf-8" ), "Move"], [os.path.join( SKINPATH, DATA.slugify( defaultIDFrom ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"], [os.path.join( DEFAULTPATH, DATA.slugify( defaultIDFrom ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"], [None, "New"]]
-                        target = os.path.join( DATAPATH, DATA.slugify( labelIDTo, True ) + ".DATA.xml" ).encode( "utf-8" )
+                        paths = [[os.path.join(DATAPATH, DATA.slugify(labelIDFrom, True ) + ".DATA.xml"), "Move"], [os.path.join(SKINPATH, DATA.slugify(defaultIDFrom) + ".DATA.xml"), "Copy"], [os.path.join(DEFAULTPATH, DATA.slugify(defaultIDFrom) + ".DATA.xml"), "Copy"], [None, "New"]]
+                        target = os.path.join(DATAPATH, DATA.slugify(labelIDTo, True) + ".DATA.xml")
                     else:
                         groupName = "%s.%s" %( labelIDFrom, str( i ) )
-                        paths = [[os.path.join( DATAPATH, DATA.slugify( "%s.%s" %( labelIDFrom, str( i )), True, isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" ), "Move"], [os.path.join( SKINPATH, DATA.slugify( "%s.%s" %( defaultIDFrom, str( i ) ), isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"], [os.path.join( DEFAULTPATH, DATA.slugify( "%s.%s" %( defaultIDFrom, str( i ) ), isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" ), "Copy"]]
-                        target = os.path.join( DATAPATH, DATA.slugify( "%s.%s" %( labelIDTo, str( i ) ), True, isSubLevel = True ) + ".DATA.xml" ).encode( "utf-8" )
+                        paths = [[os.path.join(DATAPATH, DATA.slugify("%s.%s" %(labelIDFrom, str( i )), True, isSubLevel = True) + ".DATA.xml"), "Move"], [os.path.join(SKINPATH, DATA.slugify("%s.%s" %(defaultIDFrom, str(i)), isSubLevel = True) + ".DATA.xml"), "Copy"], [os.path.join(DEFAULTPATH, DATA.slugify("%s.%s" %(defaultIDFrom, str(i)), isSubLevel = True) + ".DATA.xml"), "Copy"]]
+                        target = os.path.join(DATAPATH, DATA.slugify("%s.%s" %(labelIDTo, str(i)), True, isSubLevel = True) + ".DATA.xml")
 
                     target = try_decode( target )
 
@@ -837,11 +805,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
         currentProperties = []
 
         # Get previously loaded properties
-        if sys.version_info.major == 3:
-            path = os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties")
-        else:
-            path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
-
+        path = os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties")
         if xbmcvfs.exists( path ):
             # The properties file exists, load from it
             listProperties = eval( xbmcvfs.File( path ).read() )
@@ -885,12 +849,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
         # Try to save the file
         try:
-
-            if sys.version_info.major == 3:
-                f = xbmcvfs.File(os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties"), 'w')
-            else:
-                f = xbmcvfs.File( os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" ), 'w' )
-
+            f = xbmcvfs.File(os.path.join(DATAPATH, xbmc.getSkinDir() + ".properties"), 'w')
             f.write( repr( saveData ).replace( "],", "],\n" ) )
             f.close()
         except:
@@ -960,11 +919,6 @@ class GUI( xbmcgui.WindowXMLDialog ):
 
     def _load_overrides_context( self ):
         # Load context menu settings from overrides
-
-        # Check we're running Krypton or later - we don't support the context menu on earlier versions
-        if int( KODIVERSION ) <= 16:
-            return
-
         for overrideType in [ "skin", "script" ]:
             # Load overrides
             if overrideType == "skin":

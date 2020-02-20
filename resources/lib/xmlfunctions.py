@@ -13,15 +13,7 @@ ADDONID      = sys.modules[ "__main__" ].ADDONID
 ADDONVERSION = ADDON.getAddonInfo('version')
 KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
 LANGUAGE     = ADDON.getLocalizedString
-
-if sys.version_info.major == 3:
-    MASTERPATH = os.path.join(xbmc.translatePath("special://masterprofile/addon_data/"), ADDONID)
-else:
-    MASTERPATH = os.path.join(xbmc.translatePath("special://masterprofile/addon_data/").decode('utf-8'), ADDONID).encode('utf-8')
-
-STRINGCOMPARE = "StringCompare"
-if int( KODIVERSION ) >= 17:
-    STRINGCOMPARE = "String.IsEqual"
+MASTERPATH   = os.path.join(xbmc.translatePath("special://masterprofile/addon_data/"), ADDONID)
 
 import datafunctions, template
 DATA = datafunctions.DataFunctions()
@@ -29,16 +21,8 @@ import hashlib, hashlist
 
 def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
-        if sys.version_info.major == 2:
-            if isinstance (txt,str):
-                txt = txt.decode('utf-8')
-
         message = u'%s: %s' % (ADDONID, txt)
-
-        if sys.version_info.major == 3:
-            xbmc.log(msg=message, level=xbmc.LOGDEBUG)
-        else:
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 class XMLFunctions():
     def __init__(self):
@@ -63,11 +47,7 @@ class XMLFunctions():
         xbmcgui.Window( 10000 ).setProperty( "skinshortcuts-isrunning", "True" )
 
         # Get a list of profiles
-        if sys.version_info.major == 3:
-            fav_file = xbmc.translatePath('special://userdata/profiles.xml')
-        else:
-            fav_file = xbmc.translatePath( 'special://userdata/profiles.xml' ).decode("utf-8")
-
+        fav_file = xbmc.translatePath('special://userdata/profiles.xml')
         tree = None
         if xbmcvfs.exists( fav_file ):
             f = xbmcvfs.File( fav_file )
@@ -77,22 +57,16 @@ class XMLFunctions():
         if tree is not None:
             profiles = tree.findall( "profile" )
             for profile in profiles:
-                name = profile.find( "name" ).text.encode( "utf-8" )
-                dir = profile.find( "directory" ).text.encode( "utf-8" )
-                log("Profile found: " + name.decode("utf-8") + " (" + dir.decode("utf-8") + ")")
+                name = profile.find( "name" ).text
+                dir = profile.find( "directory" ).text
+                log("Profile found: " + name + " (" + dir + ")")
 
                 # Localise the directory
-                if b"://" in dir and sys.version_info.major == 3:
+                if "://" in dir:
                     dir = xbmc.translatePath(dir)
-                elif "://" in dir and sys.version_info.major == 2:
-                    dir = xbmc.translatePath(dir).decode("utf-8")
                 # Base if off of the master profile
-                elif sys.version_info.major == 3:
-                    dir = xbmc.translatePath(os.path.join("special://masterprofile", dir))
-                else:
-                    dir = xbmc.translatePath(os.path.join("special://masterprofile", dir )).decode("utf-8")
-
-                profilelist.append( [ dir, "%s(System.ProfileName,%s)" %( STRINGCOMPARE, name.decode( "utf-8" ) ), name.decode( "utf-8" ) ] )
+                dir = xbmc.translatePath(os.path.join("special://masterprofile", dir))
+                profilelist.append([dir, "String.IsEqual(System.ProfileName,%s)" %(name), name])
 
         else:
             profilelist = [["special://masterprofile", None]]
@@ -146,12 +120,6 @@ class XMLFunctions():
             else:
                 # Enable any debug logging needed
                 json_query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Settings.getSettings" }')
-
-                if sys.version_info.major == 3:
-                    json_query = json_query
-                else:
-                    json_query = unicode(json_query, 'utf-8', errors='ignore')
-
                 json_response = simplejson.loads(json_query)
 
                 enabledSystemDebug = False
@@ -194,11 +162,7 @@ class XMLFunctions():
         xbmc.executebuiltin( "Skin.SetString(skinshortcuts-sharedmenu,%s)" %( ADDON.getSetting( "shared_menu" ) ) )
 
         # Get the skins addon.xml file
-        if sys.version_info.major == 3:
-            addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml'))
-        else:
-            addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml').encode("utf-8")).decode("utf-8")
-
+        addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml'))
         addon = xmltree.parse( addonpath )
         extensionpoints = addon.findall( "extension" )
         paths = []
@@ -212,12 +176,7 @@ class XMLFunctions():
             if extensionpoint.attrib.get( "point" ) == "xbmc.gui.skin":
                 resolutions = extensionpoint.findall( "res" )
                 for resolution in resolutions:
-
-                    if sys.version_info.major == 3:
-                        path = xbmc.translatePath(os.path.join("special://skin/", resolution.attrib.get( "folder" ), "script-skinshortcuts-includes.xml"))
-                    else:
-                        path = xbmc.translatePath(os.path.join("special://skin/", resolution.attrib.get( "folder" ), "script-skinshortcuts-includes.xml").encode("utf-8")).decode("utf-8")
-
+                    path = xbmc.translatePath(os.path.join("special://skin/", resolution.attrib.get( "folder" ), "script-skinshortcuts-includes.xml"))
                     paths.append( path )
                     skinpaths.append( path )
 
@@ -572,12 +531,12 @@ class XMLFunctions():
                     if buildMode == "single" and not len( submenuitems ) == 0 and not isinstance( item, basestring ):
                         for onclickelement in mainmenuItemB.findall( "onclick" ):
                             if "condition" in onclickelement.attrib:
-                                onclickelement.set( "condition", "%s(Window(10000).Property(submenuVisibility),%s) + [%s]" %( STRINGCOMPARE, DATA.slugify( submenuVisibilityName, convertInteger=True ), onclickelement.attrib.get( "condition" ) ) )
+                                onclickelement.set("condition", "String.IsEqual(Window(10000).Property(submenuVisibility),%s) + [%s]" %(DATA.slugify(submenuVisibilityName, convertInteger=True), onclickelement.attrib.get("condition")))
                                 newonclick = xmltree.SubElement( mainmenuItemB, "onclick" )
                                 newonclick.text = "SetProperty(submenuVisibility," + DATA.slugify( submenuVisibilityName, convertInteger=True ) + ",10000)"
                                 newonclick.set( "condition", onclickelement.attrib.get( "condition" ) )
                             else:
-                                onclickelement.set( "condition", "%s(Window(10000).Property(submenuVisibility),%s)" %( STRINGCOMPARE, DATA.slugify( submenuVisibilityName, convertInteger=True ) ) )
+                                onclickelement.set("condition", "String.IsEqual(Window(10000).Property(submenuVisibility),%s)" %(DATA.slugify(submenuVisibilityName, convertInteger=True)))
                                 newonclick = xmltree.SubElement( mainmenuItemB, "onclick" )
                                 newonclick.text = "SetProperty(submenuVisibility," + DATA.slugify( submenuVisibilityName, convertInteger=True ) + ",10000)"
 
@@ -610,7 +569,7 @@ class XMLFunctions():
                             justmenuTreeA.append( menuitem )
 
                             visibilityElement = menuitemCopy.find( "visible" )
-                            visibilityElement.text = "[%s] + %s" %( visibilityElement.text, "%s(Window(10000).Property(submenuVisibility),%s)" %( STRINGCOMPARE, DATA.slugify( submenuVisibilityName, convertInteger=True ) ) )
+                            visibilityElement.text = "[%s] + %s" %(visibilityElement.text, "String.IsEqual(Window(10000).Property(submenuVisibility),%s)" %(DATA.slugify(submenuVisibilityName, convertInteger=True )))
                             justmenuTreeB.append( menuitemCopy )
 
                         if buildMode == "single" and not isinstance( item, basestring ):
@@ -623,7 +582,7 @@ class XMLFunctions():
 
                         menuitemCopy = Template.copy_tree( menuitem )
                         visibilityElement = menuitemCopy.find( "visible" )
-                        visibilityElement.text = "[%s] + %s" %( visibilityElement.text, "%s(Container(%s).ListItem.Property(submenuVisibility),%s)" %( STRINGCOMPARE, mainmenuID, DATA.slugify( submenuVisibilityName, convertInteger=True ) ) )
+                        visibilityElement.text = "[%s] + %s" %(visibilityElement.text, "String.IsEqual(Container(%s).ListItem.Property(submenuVisibility),%s)" %(mainmenuID, DATA.slugify( submenuVisibilityName, convertInteger=True)))
                         submenuTree.append( menuitemCopy )
                     if len( submenuitems ) == 0 and "noGroups" not in options:
                         # There aren't any submenu items, so add a 'description' element to the group includes
@@ -637,7 +596,7 @@ class XMLFunctions():
                     buildOthers = False
                     if item in submenuItems:
                         buildOthers = True
-                    Template.parseItems( "submenu", count, templateSubMenuItems, profile[ 2 ], profile[ 1 ], "%s(Container(%s).ListItem.Property(submenuVisibility),%s)" %( STRINGCOMPARE, mainmenuID, DATA.slugify( submenuVisibilityName, convertInteger=True )  ), item, None, buildOthers, mainmenuitems = templateCurrentMainMenuItem )
+                    Template.parseItems("submenu", count, templateSubMenuItems, profile[2], profile[1], "String.IsEqual(Container(%s).ListItem.Property(submenuVisibility),%s)" %(mainmenuID, DATA.slugify(submenuVisibilityName, convertInteger=True)), item, None, buildOthers, mainmenuitems = templateCurrentMainMenuItem)
 
                     count += 1
 
@@ -693,11 +652,7 @@ class XMLFunctions():
         progress.update( 100, message = LANGUAGE( 32098 ) )
 
         # Get the skins addon.xml file
-        if sys.version_info.major == 3:
-            addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml'))
-        else:
-            addonpath = xbmc.translatePath( os.path.join( "special://skin/", 'addon.xml').encode("utf-8") ).decode("utf-8")
-
+        addonpath = xbmc.translatePath(os.path.join("special://skin/", 'addon.xml'))
         addon = xmltree.parse( addonpath )
         extensionpoints = addon.findall( "extension" )
         paths = []
@@ -705,12 +660,7 @@ class XMLFunctions():
             if extensionpoint.attrib.get( "point" ) == "xbmc.gui.skin":
                 resolutions = extensionpoint.findall( "res" )
                 for resolution in resolutions:
-
-                    if sys.version_info.major == 3:
-                        path = xbmc.translatePath(os.path.join(try_decode(self.skinDir), try_decode(resolution.attrib.get("folder")), "script-skinshortcuts-includes.xml"))
-                    else:
-                        path = xbmc.translatePath( os.path.join( try_decode( self.skinDir ) , try_decode( resolution.attrib.get( "folder" ) ), "script-skinshortcuts-includes.xml").encode("utf-8") ).decode('utf-8')
-
+                    path = xbmc.translatePath(os.path.join(try_decode(self.skinDir), try_decode(resolution.attrib.get("folder")), "script-skinshortcuts-includes.xml"))
                     paths.append( path )
         skinVersion = addon.getroot().attrib.get( "version" )
 
@@ -810,12 +760,7 @@ class XMLFunctions():
                     visibleProperty.text = try_decode( property[1] )
                 else:
                     additionalproperty = xmltree.SubElement( newelement, "property" )
-
-                    if sys.version_info.major == 3:
-                        additionalproperty.set("name", property[0])
-                    else:
-                        additionalproperty.set( "name", property[0].decode( "utf-8" ) )
-
+                    additionalproperty.set("name", property[0])
                     additionalproperty.text = property[1]
                     allProps[ property[ 0 ] ] = additionalproperty
 
@@ -872,12 +817,7 @@ class XMLFunctions():
 
                     if matches:
                         additionalproperty = xmltree.SubElement( newelement, "property" )
-
-                        if sys.version_info.major == 3:
-                            additionalproperty.set("name",key)
-                        else:
-                            additionalproperty.set( "name", key.decode( "utf-8" ) )
-
+                        additionalproperty.set("name", key)
                         additionalproperty.text = propertyMatch[ 0 ]
                         allProps[ key ] = additionalproperty
                         break
@@ -1033,14 +973,8 @@ class XMLFunctions():
                     propertyPattern = regexpPattern.sub(replacement, propertyPattern)
 
                 additionalproperty = xmltree.SubElement(newelement, "property")
-
-                if sys.version_info.major == 3:
-                    additionalproperty.set("name", propertyName)
-                    additionalproperty.text = propertyPattern
-                else:
-                    additionalproperty.set("name", propertyName.decode("utf-8"))
-                    additionalproperty.text = propertyPattern.decode("utf-8")
-
+                additionalproperty.set("name", propertyName)
+                additionalproperty.text = propertyPattern
                 allProps[ propertyName ] = additionalproperty
 
         return( newelement, allProps )

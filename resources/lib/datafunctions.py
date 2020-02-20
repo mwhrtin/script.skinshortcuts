@@ -8,13 +8,8 @@ from xml.dom.minidom import parse
 from traceback import print_exc
 from unidecode import unidecode
 from unicodeutils import try_decode
-
-if sys.version_info.major == 3:
-    import urllib.request, urllib.parse, urllib.error
-    from html.entities import name2codepoint
-else:
-    import urllib
-    from htmlentitydefs import name2codepoint
+import urllib.request, urllib.parse, urllib.error
+from html.entities import name2codepoint
 
 import nodefunctions
 NODE = nodefunctions.NodeFunctions()
@@ -23,17 +18,10 @@ ADDON        = xbmcaddon.Addon()
 ADDONID      = ADDON.getAddonInfo('id')
 KODIVERSION  = xbmc.getInfoLabel( "System.BuildVersion" ).split(".")[0]
 LANGUAGE     = ADDON.getLocalizedString
-
-if sys.version_info.major == 3:
-    CWD          = ADDON.getAddonInfo('path')
-    DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
-    SKINPATH     = xbmc.translatePath("special://skin/shortcuts/")
-    DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts'))
-else:
-    CWD          = ADDON.getAddonInfo('path').decode('utf-8')
-    DATAPATH     = os.path.join(xbmc.translatePath("special://profile/").decode('utf-8' ), "addon_data", ADDONID)
-    SKINPATH     = xbmc.translatePath("special://skin/shortcuts/").decode('utf-8')
-    DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts').encode("utf-8")).decode("utf-8")
+CWD          = ADDON.getAddonInfo('path')
+DATAPATH     = os.path.join(xbmc.translatePath("special://profile/"), "addon_data", ADDONID)
+SKINPATH     = xbmc.translatePath("special://skin/shortcuts/")
+DEFAULTPATH  = xbmc.translatePath(os.path.join(CWD, 'resources', 'shortcuts'))
 
 # character entity reference
 CHAR_ENTITY_REXP = re.compile('&(%s);' % '|'.join(name2codepoint))
@@ -52,13 +40,8 @@ def log(txt):
     if ADDON.getSetting( "enable_logging" ) == "true":
         if not isinstance (txt,str):
             txt = txt.decode('utf-8')
-
         message = u'%s: %s' % (ADDONID, txt)
-
-        if sys.version_info.major == 3:
-            xbmc.log(msg=message, level=xbmc.LOGDEBUG)
-        else:
-            xbmc.log(msg=message.encode('utf-8'), level=xbmc.LOGDEBUG)
+        xbmc.log(msg=message, level=xbmc.LOGDEBUG)
 
 class DataFunctions():
     def __init__(self):
@@ -147,10 +130,7 @@ class DataFunctions():
         log( "Loading shortcuts for group " + group )
 
         if profileDir is None:
-            if sys.version_info.major == 3:
-                profileDir = xbmc.translatePath("special://profile/")
-            else:
-                profileDir = xbmc.translatePath( "special://profile/" ).decode( "utf-8" )
+            profileDir = xbmc.translatePath("special://profile/")
 
         userShortcuts = os.path.join( profileDir, "addon_data", ADDONID, self.slugify( group, True, isSubLevel = isSubLevel ) + ".DATA.xml" )
         skinShortcuts = os.path.join( SKINPATH , self.slugify( group ) + ".DATA.xml")
@@ -487,12 +467,8 @@ class DataFunctions():
                             oldicon = icon
                             newicon = elem.text
 
-        if sys.version_info.major == 3:
-            if not (xbmc.skinHasImage(newicon) or xbmcvfs.exists(newicon)) and setToDefault == True:
-                newicon = self._get_icon_overrides( tree, "DefaultShortcut.png", group, labelID, False )
-        else:
-            if not (xbmc.skinHasImage(newicon.encode("utf-8")) or xbmcvfs.exists(newicon.encode("utf-8"))) and setToDefault == True:
-                newicon = self._get_icon_overrides( tree, "DefaultShortcut.png", group, labelID, False )
+        if not (xbmc.skinHasImage(newicon) or xbmcvfs.exists(newicon)) and setToDefault == True:
+            newicon = self._get_icon_overrides( tree, "DefaultShortcut.png", group, labelID, False )
 
         return newicon
 
@@ -570,12 +546,7 @@ class DataFunctions():
         self.currentProperties = []
         self.defaultProperties = []
 
-        if sys.version_info.major == 3:
-            path = os.path.join(profileDir, "addon_data", ADDONID, xbmc.getSkinDir() + ".properties")
-        else:
-            path = os.path.join( profileDir, "addon_data", ADDONID, xbmc.getSkinDir() + ".properties" ).encode( "utf-8" )
-
-        #path = os.path.join( DATAPATH , xbmc.getSkinDir().decode('utf-8') + ".properties" )
+        path = os.path.join(profileDir, "addon_data", ADDONID, xbmc.getSkinDir() + ".properties")
         if xbmcvfs.exists( path ):
             # The properties file exists, load from it
             try:
@@ -813,16 +784,10 @@ class DataFunctions():
     def createNiceName ( self, item, noNonLocalized = False ):
         # Translate certain localized strings into non-localized form for labelID
         if noNonLocalized == False:
-            if int( KODIVERSION ) >= 18:
-                if item == "3":
-                    return "videos"
-                if item == "2":
-                    return "music"
-            else:
-                if item == "10006":
-                    return "videos"
-                if item == "10005":
-                    return "music"
+            if item == "3":
+                return "videos"
+            if item == "2":
+                return "music"
             if item == "342":
                 return "movies"
             if item == "20343":
@@ -893,10 +858,8 @@ class DataFunctions():
             return "System.CanHibernate"
         elif action == "reset()" or action == "reset":
             return "System.CanReboot"
-        elif action == "system.logoff" and int( KODIVERSION ) >= 17:
-            return "[System.HasLoginScreen | Integer.IsGreater(System.ProfileCount,1)] + System.Loggedon"
         elif action == "system.logoff":
-            return "[System.HasLoginScreen | IntegerGreaterThan(System.ProfileCount,1)] + System.Loggedon"
+            return "[System.HasLoginScreen | Integer.IsGreater(System.ProfileCount,1)] + System.Loggedon"
         elif action == "mastermode":
             return "System.HasLocks"
         elif action == "inhibitidleshutdown(true)":
@@ -907,22 +870,14 @@ class DataFunctions():
             return "[System.Platform.Windows | System.Platform.Linux] +! System.Platform.Linux.RaspberryPi"
 
         # General visibilities
-        elif action == "activatewindow(weather)" and int( KODIVERSION ) >= 17:
-            return "!String.IsEmpty(Weather.Plugin)"
         elif action == "activatewindow(weather)":
-            return "!IsEmpty(Weather.Plugin)"
+            return "!String.IsEmpty(Weather.Plugin)"
         elif action.startswith( "activatewindowandfocus(mypvr" ) or action.startswith( "playpvr" ) and ADDON.getSetting( "donthidepvr" ) == "false":
             return "PVR.HasTVChannels"
         elif action.startswith( "activatewindow(tv" ) and ADDON.getSetting( "donthidepvr" ) == "false":
-            if int( KODIVERSION ) >= 17:
-                return "System.HasPVRAddon"
-            else:
-                return "PVR.HasTVChannels"
+            return "System.HasPVRAddon"
         elif action.startswith( "activatewindow(radio" ) and ADDON.getSetting( "donthidepvr" ) == "false":
-            if int( KODIVERSION ) >= 17:
-                return "System.HasPVRAddon"
-            else:
-                return "PVR.HasRadioChannels"
+            return "System.HasPVRAddon"
         elif action.startswith( "activatewindow(videos,movie" ):
             return "Library.HasContent(Movies)"
         elif action.startswith( "activatewindow(videos,recentlyaddedmovies" ):
@@ -1055,7 +1010,7 @@ class DataFunctions():
             if files:
                 for file in files:
                     if file.endswith( ".hash" ) and not file.startswith( "%s-" %( xbmc.getSkinDir() ) ):
-                        canImport, skinName = self.parseHashFile( os.path.join( DATAPATH, file.decode( 'utf-8' ) ).encode( 'utf-8' ) )
+                        canImport, skinName = self.parseHashFile(os.path.join(DATAPATH, file))
                         if canImport == True:
                             skinNames.append( skinName )
                     elif file.endswith( ".DATA.xml" ) and not file.startswith( "%s-" %( xbmc.getSkinDir() ) ):
@@ -1125,14 +1080,14 @@ class DataFunctions():
                 newFile = oldFile.replace( skinName, xbmc.getSkinDir() )
             else:
                 newFile = "%s-%s" %( xbmc.getSkinDir(), oldFile )
-            oldPath = os.path.join( DATAPATH, oldFile.decode( 'utf-8' ) ).encode( 'utf-8' )
-            newPath = os.path.join( DATAPATH, newFile.decode( 'utf-8' ) ).encode( 'utf-8' )
+            oldPath = os.path.join(DATAPATH, oldFile)
+            newPath = os.path.join(DATAPATH, newFile)
 
             # Copy file
             xbmcvfs.copy( oldPath, newPath )
 
         # Delete any .properties file
-        propFile = os.path.join( DATAPATH, "%s.properties" %( xbmc.getSkinDir() ) ).encode( 'utf-8' )
+        propFile = os.path.join(DATAPATH, "%s.properties" %(xbmc.getSkinDir()))
         if xbmcvfs.exists( propFile ):
             xbmcvfs.delete( propFile )
 
@@ -1258,23 +1213,15 @@ class DataFunctions():
             text = "NUM-" + text
 
         # text to unicode
-        if sys.version_info.major == 3:
-            if type(text) != str:
-                text = str(text, 'utf-8', 'ignore')
-        else:
-            if type(text) != types.UnicodeType:
-                text = unicode(text, 'utf-8', 'ignore')
+        if type(text) != str:
+            text = str(text, 'utf-8', 'ignore')
 
         # decode unicode ( ??? = Ying Shi Ma)
         text = unidecode(text)
 
         # text back to unicode
-        if sys.version_info.major == 3:
-            if type(text) != str:
-                text = str(text, 'utf-8', 'ignore')
-        else:
-            if type(text) != types.UnicodeType:
-                text = unicode(text, 'utf-8', 'ignore')
+        if type(text) != str:
+            text = str(text, 'utf-8', 'ignore')
 
         # character entity reference
         if entities:
@@ -1296,8 +1243,6 @@ class DataFunctions():
 
         # translate
         text = unicodedata.normalize('NFKD', text)
-        if sys.version_info < (3,):
-            text = text.encode('ascii', 'ignore')
 
         # replace unwanted characters
         text = REPLACE1_REXP.sub('', text.lower()) # replace ' with nothing instead with -
