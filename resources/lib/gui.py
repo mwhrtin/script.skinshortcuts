@@ -710,7 +710,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
             path = try_decode( path )
 
             xmlFile = xbmcvfs.File( path.replace( ".shortcuts", ".DATA.xml" ) , 'w' )
-            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
             xmlFile.close()
 
             # Now make any labelID changes
@@ -758,7 +758,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
                         if path[1] == "New":
                             tree = xmltree.ElementTree( xmltree.Element( "shortcuts" ) )
                             xmlFile = xbmcvfs.File( target, 'w' )
-                            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+                            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
                             xmlFile.close()
                             log( "Creating empty file - %s" %( target ) )
                             break
@@ -782,7 +782,7 @@ class GUI( xbmcgui.WindowXMLDialog ):
                                 # Write it to the target
                                 DATA.indent( newtree.getroot() )
                                 xmlFile = xbmcvfs.File( target, 'w' )
-                                xmlFile.write( xmltree.tostring( newtree.getroot(), encoding='UTF-8', method='xml' ) )
+                                xmlFile.write( xmltree.tostring( newtree.getroot(), encoding='unicode', method='xml' ) )
                                 xmlFile.close()
                                 log( "Copying " + path[0] + " > " + target )
 

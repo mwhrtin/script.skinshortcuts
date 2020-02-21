@@ -425,7 +425,7 @@ class NodeFunctions():
         DATA.indent( menuitems.getroot() )
         path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, "%s.DATA.xml" %(DATA.slugify(allLabelIDs[selectedMenu], True))))
         xmlFile = xbmcvfs.File( path, 'w' )
-        xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='unicode', method='xml' ) )
         xmlFile.close()
 
         if isNode and selectedMenu == 1:
@@ -444,7 +444,7 @@ class NodeFunctions():
             DATA.indent( menuitems.getroot() )
             path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, DATA.slugify(newLabelID, True) + ".DATA.xml"))
             xmlFile = xbmcvfs.File( path, 'w' )
-            xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='unicode', method='xml' ) )
             xmlFile.close()
 
         # Mark that the menu needs to be rebuilt
@@ -562,7 +562,7 @@ class NodeFunctions():
         DATA.indent( menuitems.getroot() )
         path = xbmc.translatePath(os.path.join("special://profile", "addon_data", ADDONID, "%s.DATA.xml" %(DATA.slugify( group, True))))
         xmlFile = xbmcvfs.File( path, 'w' )
-        xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.write( xmltree.tostring( menuitems.getroot(), encoding='unicode', method='xml' ) )
         xmlFile.close()
 
         log( "Properties updated" )

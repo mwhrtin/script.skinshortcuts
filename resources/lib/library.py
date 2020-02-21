@@ -1826,7 +1826,7 @@ class LibraryFunctions():
         # Write playlist we'll link to the menu item
         DATA.indent( tree.getroot() )
         xmlFile = xbmcvfs.File( os.path.join( DATAPATH, str( id ) + ".xsp" ), 'w' )
-        xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
         xmlFile.close()
 
         # Add a random property, and save this for use in playlists/backgrounds
@@ -1834,7 +1834,7 @@ class LibraryFunctions():
         order.text = "random"
         DATA.indent( tree.getroot() )
         xmlFile = xbmcvfs.File( os.path.join( DATAPATH, str( id ) + "-randomversion.xsp" ), 'w' )
-        xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+        xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
         xmlFile.close()
 
         return str( id ) + ".xsp"
@@ -1882,7 +1882,7 @@ class LibraryFunctions():
             # Write the tree
             DATA.indent( tree.getroot() )
             xmlFile = xbmcvfs.File( filename, 'w' )
-            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
             xmlFile.close()
 
             # Load the random tree and change the name
@@ -1896,7 +1896,7 @@ class LibraryFunctions():
             # Write the random tree
             DATA.indent( tree.getroot() )
             xmlFile = xbmcvfs.File( filename.replace( ".xsp", "-randomversion.xsp" ), 'w' )
-            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
             xmlFile.close()
 
     def getImagesFromVfsPath(self, path):

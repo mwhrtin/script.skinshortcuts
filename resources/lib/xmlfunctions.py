@@ -674,7 +674,7 @@ class XMLFunctions():
         DATA.indent( tree.getroot() )
         for path in paths:
             xmlFile = xbmcvfs.File( path, 'w' )
-            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='UTF-8', method='xml' ) )
+            xmlFile.write( xmltree.tostring( tree.getroot(), encoding='unicode', method='xml' ) )
             xmlFile.close()
 
             # Save the hash of the file we've just written
